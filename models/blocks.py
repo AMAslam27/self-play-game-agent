@@ -1,6 +1,6 @@
 """Reusable fully connected blocks and a builder for configurable networks."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from torch import Tensor, nn
 
@@ -74,6 +74,18 @@ class ResidualBlock(nn.Module):
         return inputs + self.branch(inputs)
 
 
+BlockFactory = Callable[[int, int, str, float], nn.Module]
+
+BLOCK_FACTORIES: dict[str, BlockFactory] = {
+    "dense": lambda input_size, output_size, activation, _dropout: DenseBlock(
+        input_size, output_size, activation
+    ),
+    "dropout": DropoutBlock,
+    "residual": lambda input_size, output_size, activation, _dropout: ResidualBlock(
+        input_size, output_size, activation
+    ),
+}
+
 def build_blocks(
     input_size: int,
     hidden_sizes: Sequence[int],
@@ -99,20 +111,21 @@ def build_blocks(
 
     blocks: list[nn.Module] = []
     previous_size = input_size
+
     for output_size, block_type, activation in zip(
         hidden_sizes, block_types, activations, strict=True
     ):
-        block: nn.Module
-        if block_type == "dense":
-            block = DenseBlock(previous_size, output_size, activation)
-        elif block_type == "dropout":
-            block = DropoutBlock(
-                previous_size, output_size, activation, dropout_probability
-            )
-        elif block_type == "residual":
-            block = ResidualBlock(previous_size, output_size, activation)
-        else:
+        factory = BLOCK_FACTORIES.get(block_type)
+        if factory is None:
             raise ValueError(f"Unsupported block type: {block_type!r}")
+
+        block = factory(
+            previous_size,
+            output_size,
+            activation,
+            dropout_probability,
+        )
         blocks.append(block)
         previous_size = output_size
+
     return nn.Sequential(*blocks)

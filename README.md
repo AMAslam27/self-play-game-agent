@@ -257,5 +257,138 @@ q_values = model(torch.zeros(9))
 ```
 
 The example config at `training/tictactoe/config.example.yaml` describes the
-same constructor settings under `network`. Config loading, action selection,
-legal-action masking, and the learning loop will be added separately.
+same constructor settings under `network`. The DQN agent below handles action
+selection and legal-action masking; the training entry point below loads the
+config and coordinates the full training loop.
+
+## DQN agent
+
+`training.dqn.DQNAgent` accepts a Q-network and provides `select_action` and
+`learn`. Observations need flat numeric `board` features and an `action_mask`;
+the agent does not import any game-specific rules.
+
+```python
+import random
+
+import torch
+
+from models.tictactoe import TicTacToeQNetwork
+from training.dqn import DQNAgent
+
+torch.manual_seed(42)
+agent = DQNAgent(
+    TicTacToeQNetwork(),
+    optimizer={"name": "adam", "learning_rate": 0.001, "weight_decay": 0.0},
+    lr_scheduler={"name": "none", "options": {}},
+    discount_factor=0.99,
+    target_update_every_updates=250,
+    device="auto",
+    rng=random.Random(42),
+)
+```
+
+`agent.select_action(observation, epsilon=0.1)` explores with a random legal
+move 10% of the time; otherwise it chooses the highest legal Q-value. Greedy
+inference disables gradients and dropout. Use `epsilon=0.0` for evaluation.
+
+`agent.learn(buffer.sample(batch_size))` converts replay values to float32
+tensor batches on the selected device, performs one optimizer update using
+Smooth L1 loss, and returns the mean loss. Ongoing transitions bootstrap from the
+highest legal target-network value; terminal transitions use only their reward
+and never evaluate their next observations. Target weights are copied after
+every configured number of optimizer updates, not episodes or game moves.
+
+`device="auto"` selects CUDA when available and CPU otherwise. Replay storage
+stays in Python values. The agent uses an independent exploration RNG; the
+training script owns configuration loading, epsilon decay, replay sampling,
+evaluation, and checkpoints. Smooth L1 remains the loss function.
+
+Optimizer and scheduler settings are mappings matching the example YAML:
+`optimizer=config["training"]["optimizer"]` and
+`lr_scheduler=config["training"]["lr_scheduler"]`. YAML loading belongs to the
+training script; the agent receives settings rather than a file path.
+
+`training.utils.build_optimizer` supports `adam`, `adamw`, and `sgd` through a
+factory dictionary. Set `learning_rate` and `weight_decay` directly in the
+optimizer mapping; optional `options` holds optimizer-specific arguments such
+as `momentum` for SGD. Weight decay defaults to zero for every optimizer,
+including AdamW.
+
+`training.utils.build_lr_scheduler` supports `none`, `step`, and `exponential`.
+For example, `{"name": "step", "options": {"step_size": 5000, "gamma": 0.5}}`
+halves the learning rate after every 5,000 successful optimizer updates.
+Exponential scheduling uses `{"name": "exponential", "options": {"gamma": 0.9999}}`
+to multiply the rate after each update. Evaluation and action selection do not
+advance the scheduler. Keep both optimizer and scheduler `state_dict()` values
+in future checkpoints to resume the schedule.
+
+## Train a Tic-Tac-Toe agent
+
+```text
+poetry run python -m training.tictactoe.train --config training/tictactoe/config.example.yaml
+poetry run python -m training.tictactoe.train --episodes 100 --device cpu
+```
+
+The second command uses the example config with a shorter episode target.
+Very short runs may stay entirely in replay warm-up and therefore have no
+learning updates; reduce `training.learning_starts` in a separate config when
+testing learning with a small episode count.
+Training outputs live under `training/tictactoe/runs/<unique-run-id>/` by
+default, separately from source files. Each run contains resolved `config.yaml`,
+`run.json`, `training.log`, a SQLite evaluation database, checkpoints, four raw
+CSV metric files, and seven PNG plots under `plots/`:
+
+- `epsilon.png` and `learning_rate.png` track exploration and LR actually used.
+- `loss.png` preserves raw losses and plots a rolling episode mean.
+- `training_return.png` and `training_outcomes.png` show exploratory training results.
+- `evaluation.png` shows greedy win/draw/loss rates for each opponent and seat.
+- `time.png` shows cumulative environment/learning time and evaluation-match time.
+
+`run.json` records training, evaluation, and total active wall-clock seconds,
+throughput, UTC start/end timestamps, device, runtime versions, and code version
+when Git metadata is available. Training time measures environment interaction
+and learning; CSV writes, setup, checkpointing, and plotting contribute to total
+wall time. On resume, paused time is excluded. CSVs contain one row per decision,
+learning update, completed episode, or evaluation batch. Episodes commit their
+metrics only after the game finishes; warm-up produces no loss rows.
+
+Evaluation runs before training, periodically, and at normal completion. It
+uses its own fixed seeds, disables exploration/learning, and preserves training
+RNG states. Results are recorded in the run's `games.sqlite3` using the existing
+recorder; policy labels include the training run ID and learning-update count.
+Minimax decisions are cached without changing its policy. Incomplete evaluation
+batches have an interrupted status and are excluded from performance plots.
+
+Press Ctrl+C once to finish the current game, save progress, and generate plots.
+A second Ctrl+C interrupts immediately; the last saved checkpoint remains
+available. Unexpected failures mark the run failed and preserve completed CSV
+records without saving a partially trained episode as a resumable boundary.
+
+```text
+poetry run python -m training.tictactoe.train --resume training/tictactoe/runs/<run-id>/checkpoints/latest.pt
+poetry run python -m training.tictactoe.train --resume training/tictactoe/runs/<run-id>/checkpoints/latest.pt --episodes 30000
+```
+
+`--episodes` is the total target, including episodes already completed.
+`--device` may also be changed on resume; all other settings come from the
+checkpoint. Checkpoints include online/target networks, optimizer, scheduler,
+replay data, independent/global RNG states, progress, and CSV boundaries.
+When metrics extend beyond the selected checkpoint, they are backed up under
+`recoveries/` before restoring the saved boundary. SQLite retains all evaluation
+attempts as an audit trail. Reproducibility applies on the same code, software,
+and device setup; moving between CPU and GPU may change numerical results.
+
+`artifacts.metrics_every_episodes` controls progress/flush intervals and the
+rolling plot window. `artifacts.plot_every_episodes` controls periodic chart
+refreshes; final charts are always generated. Charts can be regenerated from
+the CSVs by calling `training.plots.plot_training_metrics(run_dir)`.
+
+Using the existing Docker service:
+
+```text
+docker compose run --rm --entrypoint python tictactoe -m training.tictactoe.train --config training/tictactoe/config.example.yaml
+```
+
+The project mount preserves run artifacts on the host. To run the new pipeline
+tests without pytest, use `python -m unittest tests.unit_tests.training.test_training`
+in an environment with the project dependencies installed.
