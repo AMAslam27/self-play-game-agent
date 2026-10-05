@@ -187,3 +187,75 @@ for example `20261001T123025123456Z_run-42.png`. Human replays have separate
 charts showing only that batch. Runs without completed games create no chart.
 `--plot-file results/chart.png` overrides the path; subsequent human replay
 batches append their run ID to that custom filename to preserve earlier charts.
+
+## RL training environment adapter
+
+`training.environment.TicTacToeAdapter` exposes agent decisions against an
+existing opponent policy. It defaults to the random opponent; minimax and other
+`policy(game) -> action` callables can also be passed in.
+
+```python
+import random
+
+from games.tictactoe.rules import PLAYER_O
+from training.environment import TicTacToeAdapter
+
+random.seed(42)
+environment = TicTacToeAdapter(agent_player=PLAYER_O)
+observation = environment.reset()
+done = False
+while not done:
+    legal = [i for i, allowed in enumerate(observation.action_mask) if allowed]
+    action = random.choice(legal)  # replace with the learning agent's choice
+    observation, reward, done = environment.step(action)
+```
+
+Observations are immutable snapshots containing nine board values and nine
+boolean action-mask values in square order (indices 0-8). Own pieces are `+1`,
+opponent pieces `-1`, and empty squares `0`. Each step includes the agent's move
+and, if the game continues, the opponent's reply. Rewards are `+1` for an agent
+win, `-1` for a loss, and `0` for a draw or ongoing play.
+
+Reset plays the opponent's opening move when the agent is O.
+`reset(agent_player=PLAYER_X)` or `reset(agent_player=PLAYER_O)` switches seats
+for a new episode. Terminal observations have no legal actions, even if empty
+squares remain; learning targets must use `done` to disable bootstrapping.
+Call reset before the first step, after termination, or after an opponent error.
+Invalid agent actions raise `ValueError` without advancing the game. Training
+opponents must return legal moves and cannot quit or modify the game directly.
+The default opponent uses Python's random generator, so seed it before a run.
+
+## Configurable Q-network
+
+`models.blocks.build_blocks` assembles hidden layers from equal-length
+`hidden_sizes`, `block_types`, and `activations` lists. Each size is that block's
+output width; its input width comes from the previous block.
+
+- `dense`: linear transformation followed by an activation.
+- `dropout`: a dense block followed by dropout using the shared
+  `dropout_probability`; call `model.eval()` to disable dropout for evaluation.
+- `residual`: two linear layers with an activation between them, adding the
+  result to the input. Input and output widths must match; no projection or
+  activation is applied to the skip addition.
+
+Supported activations are `relu`, `tanh`, `gelu`, and `identity`.
+`models.tictactoe.TicTacToeQNetwork` uses these blocks and adds a linear output
+head with nine unrestricted Q-values. It accepts a floating-point board tensor
+of shape `(9,)` or a batch of shape `(batch_size, 9)`.
+
+```python
+import torch
+
+from models.tictactoe import TicTacToeQNetwork
+
+model = TicTacToeQNetwork(
+    hidden_sizes=[64, 64],
+    block_types=["dense", "residual"],
+    activations=["relu", "relu"],
+)
+q_values = model(torch.zeros(9))
+```
+
+The example config at `training/tictactoe/config.example.yaml` describes the
+same constructor settings under `network`. Config loading, action selection,
+legal-action masking, and the learning loop will be added separately.

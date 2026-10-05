@@ -1,0 +1,63 @@
+# Proposed settings for the upcoming DQN trainer; no config loader exists yet.
+# These are starting values to experiment with, not tuned hyperparameters.
+schema_version: 1
+
+experiment:
+  name: tictactoe-dqn-random
+  seed: 42 # Seed Python, NumPy, and PyTorch when the trainer is implemented.
+  device: auto # auto, cpu, or cuda; record the actual device in run metadata.
+
+environment:
+  opponent: random # random or minimax; passed into TicTacToeAdapter.
+  agent_seat: alternate # alternate X/O each episode; also allow x or o.
+  # Board encoding and rewards are fixed by the adapter, not configurable:
+  # own=+1, opponent=-1, empty=0; win=+1, loss=-1, draw/ongoing=0.
+
+network:
+  # Input/output sizes are fixed at nine squares for Tic-Tac-Toe.
+  hidden_sizes: [64, 64]
+  block_types: [dense, dense] # dense, dropout, or residual; one per hidden size.
+  activations: [relu, relu] # relu, tanh, gelu, or identity; one per hidden size.
+  dropout_probability: 0.1 # Shared by dropout blocks; unused for other types.
+  # All three lists must have equal lengths. Residual blocks require equal
+  # input/output widths, e.g. [dense, residual] with hidden_sizes [64, 64].
+  # The Q-network adds its own linear output head, without activation/dropout.
+
+training:
+  episodes: 20000 # One episode is one complete game.
+  learning_rate: 0.001
+  optimizer: adam
+  loss: smooth_l1
+  discount_factor: 0.99 # How much the next agent decision's value counts.
+  batch_size: 64 # Number of replay transitions per learning update.
+  replay_capacity: 10000 # Maximum stored transitions; discard oldest first.
+  learning_starts: 1000 # Collect this many transitions before learning.
+  train_every_steps: 1 # One step = agent move plus any opponent reply.
+  gradient_updates_per_step: 1 # Updates at each scheduled training step.
+  target_update_every_updates: 250 # Copy online weights after this many updates.
+
+exploration:
+  # Epsilon is the probability of selecting a uniformly random legal action.
+  initial_epsilon: 1.0
+  final_epsilon: 0.05
+  schedule: linear
+  decay_steps: 50000 # Agent decisions, not episodes; then hold final_epsilon.
+
+evaluation:
+  every_episodes: 1000
+  opponents: [random, minimax]
+  seats: [x, o] # Report each seat/opponent combination separately.
+  games_per_opponent_per_seat: 200
+  seed: 12345 # Independent evaluation RNG; do not advance training RNGs.
+  epsilon: 0.0 # Greedy legal moves, with no learning or replay collection.
+
+artifacts:
+  output_root: results/tictactoe/training # Relative to the project root.
+  # Trainer should create a unique run directory; never overwrite an older run.
+  save_resolved_config: true # Include defaults and any command-line overrides.
+  save_code_version: true # Record Git commit and whether working tree was dirty.
+  checkpoint_every_episodes: 1000
+  save_final_checkpoint: true
+  # Checkpoints should include config, run ID, model/target/optimizer state,
+  # replay buffer, counters, and RNG states so training can be resumed.
+  metrics_every_episodes: 100 # Aggregate training metrics over this interval.

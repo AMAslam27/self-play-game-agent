@@ -72,7 +72,6 @@ logs/
 
 # Model checkpoints
 checkpoints/
-models/
 *.pt
 *.pth
 *.ckpt
