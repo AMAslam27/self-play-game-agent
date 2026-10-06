@@ -1,189 +1,147 @@
-# Self-Play Game Agent
+# Reinforcement Learning for Classic Games
 
-## Project Overview
+[![CI](https://github.com/AMAslam27/Game/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AMAslam27/Game/actions/workflows/ci.yml)
 
-Train an agent to play games through reinforcement learning and
-self-play rather than relying on a labelled dataset.
+A Python project exploring reinforcement learning through classic board games,
+starting with Tic-Tac-Toe.
 
-The project will investigate whether an agent can develop a competent
-strategy through repeated interaction with the game environment.
+The current implementation includes a configurable Deep Q-Network (DQN),
+training against random or minimax opponents, evaluation, resumable checkpoints,
+and experiment reporting. Self-play and additional games are planned.
 
-Games will be: Tic Tac Toe, Connect-4, Chess.
+## Features
 
-## Goals
+- Tic-Tac-Toe rules and human, random, and minimax players.
+- Modular PyTorch networks with dense, dropout, and residual blocks.
+- DQN training with experience replay, a target network, and legal-action masking.
+- YAML configuration for network architecture and training hyperparameters.
+- Configurable optimisers, weight decay, and learning-rate schedulers.
+- Evaluation against random and minimax opponents from both player positions.
+- Training curves, exploration and learning-rate plots, and timing metrics.
+- Saved configurations, checkpoints, and run metadata.
 
--   Implement a reliable game environment.
--   Establish simple non-learning opponents.
--   Train a reinforcement-learning agent.
--   Investigate self-play.
--   Evaluate agents against fixed opponents and previous versions.
--   Measure training stability and performance.
--   Use the GPU effectively during training.
--   Provide a simple interface for human-vs-agent play.
+## Getting started
 
-## Planned Approach
+Install dependencies using Poetry:
 
-### 1. Environment
-
-Implement:
-
--   Board representations.
--   Legal actions.
--   State transitions.
--   Terminal-state detection.
--   Reward structure.
--   Efficient batch/environment interaction.
-
-### 2. Baseline Opponents
-
-Start with:
-
--   Random player.
--   Simple heuristic player.
--   Minimax player where practical.
-
-These provide meaningful reference points for evaluating the learned
-agent.
-
-### 3. Reinforcement Learning
-
-Start with a relatively simple method such as DQN or PPO.
-
-Then investigate a stronger self-play approach:
-
-``` text
-Current agent
-      ↓
-Self-play
-      ↓
-Game trajectories
-      ↓
-Training data
-      ↓
-Policy / value network
-      ↓
-Updated agent
-      ↓
-Self-play
+```sh
+poetry install
 ```
 
-A later extension could combine policy/value learning with Monte Carlo
-Tree Search.
+Start training from the repository root:
 
-### 4. Evaluation
-
-Track:
-
--   Win rate.
--   Draw rate.
--   Average return.
--   Performance against fixed opponents.
--   Performance against previous model versions.
--   Training stability.
--   Inference latency.
-
-Potentially maintain an Elo-style rating system for agents.
-
-### 5. Human Interface
-
-Provide a simple way to play:
-
-``` text
-Human
-  ↓
-Games interface
-  ↓
-Trained agent
+```sh
+poetry run python -m training.tictactoe.train \
+  --config training/tictactoe/config.example.yaml
 ```
 
-This could be a small web or desktop interface.
+Training settings are documented in the
+[example configuration](training/tictactoe/config.example.yaml).
+Copy it to create a separate experiment configuration.
 
-## Good Practices
+For a short run:
 
--   Keep the environment deterministic where appropriate for testing.
--   Unit-test legal moves and terminal-state detection.
--   Separate environment, agent, training and evaluation code.
--   Evaluate against fixed opponents that are not changing during
-    training.
--   Use independent evaluation games rather than training games.
--   Record random seeds and training configurations.
--   Save model checkpoints.
--   Monitor training instability.
--   Avoid judging progress from a single game.
--   Evaluate multiple random seeds where practical.
--   Keep visualisation and game UI separate from the training
-    implementation.
-
-## Success Criteria
-
-The project is successful when:
-
-1.  The environment passes comprehensive tests.
-2.  A baseline RL agent can learn non-trivial behaviour.
-3.  Self-play produces measurable improvement.
-4.  The final agent consistently beats simple baseline opponents.
-5.  Training and evaluation are reproducible.
-6.  A user can play against the trained agent.
-
-## Possible Extensions
-
--   AlphaZero-style policy/value training.
--   Monte Carlo Tree Search.
--   Curriculum learning.
--   Population-based self-play.
--   Model-vs-model tournaments.
--   GPU-optimised parallel environments.
-
-## Local CI checks
-
-With Poetry and GNU Make available on your PATH, run these commands from the
-project root:
-
-```text
-make install
-make ci
+```sh
+poetry run python -m training.tictactoe.train --episodes 1000
 ```
 
-`make ci` runs the same checks as `.github/workflows/ci.yml`: Ruff lint,
-Ruff format verification, mypy, and pytest. Checks run sequentially and stop
-on the first failure. Dependencies only need reinstalling when they change.
-Running `make` without a target also runs the CI checks.
+### Docker
 
-Individual checks are available as `make lint`, `make format-check`,
-`make typecheck`, and `make test`. Use `make format` to apply formatting.
+The Compose configuration uses an NVIDIA GPU and requires GPU support in Docker.
 
-On Windows, these commands require GNU Make (not Microsoft's `nmake`).
-The checks use your Poetry environment; GitHub Actions currently uses Python
-3.11 on Ubuntu, so using Python 3.11 locally gives a closer match.
-
-## Recording results
-
-Every batch of games is recorded in `results/games.sqlite3` under the project
-root, independent of the working directory. Each human replay creates a new run.
-Completed games are committed individually. Runs have UTC start/end timestamps
-and a status: running, completed, abandoned, interrupted, or failed. A hard
-process kill may leave a run marked running; committed games remain available.
-
-```text
-poetry run python runner.py --x random --o random --games 1000 --quiet --seed 42
-poetry run python runner.py --x minimax --o random --games 100 --db-file results/comparison.sqlite3
+```sh
+docker compose build
+docker compose run --rm tictactoe
 ```
 
-`--seed` resets Python's random generator at the start of each batch; replaying
-the same policies with the same seed reproduces their random choices. A seed is
-only useful for policies that use this generator. A custom `--db-file` path is
-relative to the current working directory unless absolute.
+## Training outputs
 
-`evaluation/queries.sql` contains run summaries and opponent comparisons to
-execute against the database. The recorder uses parameterised SQL, foreign keys,
-and transactions; no database server or extra dependency is needed. Diagnostic
-messages use Python logging on stderr. SQLite files are excluded from Git.
+Each experiment creates a directory under `training/tictactoe/runs/` containing:
 
-### Automatic charts
+- The resolved configuration and run metadata.
+- Episode, decision, update, and evaluation CSV files.
+- Model checkpoints and a training log.
+- Evaluation game records.
+- Plots for returns, outcomes, loss, epsilon, learning rate, and elapsed time.
 
-Each game batch automatically saves a chart under `results/tictactoe/plots/`, named with
-its recorded UTC start timestamp (including microseconds) and database run ID,
-for example `20261001T123025123456Z_run-42.png`. Human replays have separate
-charts showing only that batch. Runs without completed games create no chart.
-`--plot-file results/chart.png` overrides the path; subsequent human replay
-batches append their run ID to that custom filename to preserve earlier charts.
+Resume a run using its checkpoint:
+
+```sh
+poetry run python -m training.tictactoe.train \
+  --resume training/tictactoe/runs/<run-id>/checkpoints/latest.pt \
+  --episodes 30000
+```
+
+`--episodes` specifies the total episode target, including episodes already
+completed.
+
+## Current results
+
+The first published experiment trained against a random opponent for 20,000
+episodes, alternating between X and O.
+
+| Evaluation opponent | Agent seat | Games | Wins | Draws | Losses |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Random | X | 200 | 198 | 2 | 0 |
+| Random | O | 200 | 161 | 26 | 13 |
+| Minimax | X | 200 | 0 | 200 | 0 |
+| Minimax | O | 200 | 0 | 200 | 0 |
+
+Evaluation used greedy actions with epsilon set to zero.
+
+- Training seed: `42`; evaluation seed: `12345`.
+- Network: two dense hidden layers of 64 units with ReLU activation.
+- Optimiser: Adam, with learning rate `0.001`.
+- Device: CUDA.
+- Training time: approximately 183 seconds.
+- Evaluation time: approximately 71 seconds.
+- Total elapsed time: approximately 294 seconds.
+
+These measurements describe one training seed and the evaluated games.
+They do not establish perfect play across every possible board position.
+The run recorded uncommitted code changes, so its recorded Git commit alone
+does not fully identify the implementation used.
+
+![Evaluation progress](docs/results/2026-10-05-random/evaluation.png)
+
+Inspect the [experiment configuration](docs/results/2026-10-05-random/config.yaml),
+[evaluation history](docs/results/2026-10-05-random/evaluation.csv),
+and [complete plot snapshot](docs/results/2026-10-05-random/).
+
+## Play Tic-Tac-Toe
+
+```sh
+poetry run python runner.py --x human --o minimax
+```
+
+Available players are `human`, `random`, and `minimax`.
+
+## Project structure
+
+| Directory | Purpose |
+| --- | --- |
+| `games/` | Game rules and state |
+| `players/` | Baseline players |
+| `models/` | PyTorch networks and reusable blocks |
+| `training/` | Shared training, evaluation, and experiment utilities |
+| `training/tictactoe/` | Tic-Tac-Toe adapter, configuration, and training entrypoint |
+| `tests/` | Automated tests |
+| `docs/results/` | Published experiment snapshots |
+
+## Development
+
+Run the checks used by CI:
+
+```sh
+poetry run ruff check .
+poetry run ruff format --check .
+poetry run mypy .
+poetry run pytest
+```
+
+## Planned work
+
+- Evaluate training stability across multiple seeds.
+- Integrate trained models into the interactive game runner.
+- Add self-play training.
+- Extend the environment and training framework to additional games.

@@ -1,0 +1,62 @@
+schema_version: 1
+experiment:
+  name: tictactoe-dqn-random
+  seed: 42
+  device: auto
+  deterministic: true
+environment:
+  opponent: random
+  agent_seat: alternate
+network:
+  hidden_sizes:
+  - 64
+  - 64
+  block_types:
+  - dense
+  - dense
+  activations:
+  - relu
+  - relu
+  dropout_probability: 0.1
+training:
+  episodes: 20000
+  optimizer:
+    name: adam
+    learning_rate: 0.001
+    weight_decay: 0.0
+    options: {}
+  lr_scheduler:
+    name: none
+    options: {}
+  loss: smooth_l1
+  discount_factor: 0.99
+  batch_size: 64
+  replay_capacity: 10000
+  learning_starts: 1000
+  train_every_steps: 1
+  gradient_updates_per_step: 1
+  target_update_every_updates: 250
+exploration:
+  initial_epsilon: 1.0
+  final_epsilon: 0.05
+  schedule: linear
+  decay_steps: 50000
+evaluation:
+  every_episodes: 1000
+  opponents:
+  - random
+  - minimax
+  seats:
+  - x
+  - o
+  games_per_opponent_per_seat: 200
+  seed: 12345
+  epsilon: 0.0
+artifacts:
+  output_root: C:\Users\asima\Documents\Code\Game\training\tictactoe\runs
+  save_resolved_config: true
+  save_code_version: true
+  checkpoint_every_episodes: 1000
+  save_final_checkpoint: true
+  metrics_every_episodes: 100
+  plot_every_episodes: 1000

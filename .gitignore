@@ -72,7 +72,6 @@ logs/
 
 # Model checkpoints
 checkpoints/
-models/
 *.pt
 *.pth
 *.ckpt
@@ -113,3 +112,10 @@ temp/
 
 # Automatically generated run charts
 /results/*/plots/
+
+Add-Content -Path .gitignore -Value "`n# Published experiment figures`n!/docs/results/**/*.png"
+
+/PROJECT_SCOPE.md
+
+# Published experiment figures
+!/docs/results/**/*.png
