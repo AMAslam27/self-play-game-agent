@@ -74,13 +74,21 @@ def _seed_training(seed: int, deterministic: bool) -> None:
 def _code_version() -> dict[str, Any]:
     try:
         commit = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, capture_output=True,
-            text=True, check=True, timeout=10,
+            ["git", "rev-parse", "HEAD"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
         ).stdout.strip()
         dirty = bool(
             subprocess.run(
-                ["git", "status", "--porcelain"], cwd=PROJECT_ROOT, capture_output=True,
-                text=True, check=True, timeout=10,
+                ["git", "status", "--porcelain"],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=10,
             ).stdout.strip()
         )
         return {"commit": commit, "dirty": dirty}
@@ -182,7 +190,9 @@ def run_training(
             raise ValueError("Checkpoint does not belong to this run directory")
         progress = Progress(**saved["progress"])
         if training["episodes"] < progress.episodes:
-            raise ValueError("Episode target is below the checkpoint's completed episodes")
+            raise ValueError(
+                "Episode target is below the checkpoint's completed episodes"
+            )
         restore_checkpoint(saved, agent, replay, opponent_rng, Observation)
         restore_metric_offsets(run_dir, saved["metric_offsets"])
 
@@ -211,7 +221,8 @@ def run_training(
     )
     _save_config(run_dir, config)
     wall_base = max(
-        progress.wall_seconds, float(metadata.get("progress", {}).get("wall_seconds", 0))
+        progress.wall_seconds,
+        float(metadata.get("progress", {}).get("wall_seconds", 0)),
     )
     window_returns: deque[float] = deque(maxlen=artifacts["metrics_every_episodes"])
     log_handler = logging.FileHandler(run_dir / "training.log", encoding="utf-8")
@@ -220,26 +231,43 @@ def run_training(
 
     def update_metadata(status: str) -> None:
         progress.wall_seconds = wall_base + perf_counter() - session_started
-        metadata.update({
-            "status": status, "progress": asdict(progress), "learning_updates": agent.learning_updates,
-            "episodes_per_second": progress.episodes / progress.training_seconds if progress.training_seconds else 0.0,
-            "updates_per_second": agent.learning_updates / progress.training_seconds if progress.training_seconds else 0.0,
-            "finished_at": utc_now() if status != "running" else None,
-        })
+        metadata.update(
+            {
+                "status": status,
+                "progress": asdict(progress),
+                "learning_updates": agent.learning_updates,
+                "episodes_per_second": progress.episodes / progress.training_seconds
+                if progress.training_seconds
+                else 0.0,
+                "updates_per_second": agent.learning_updates / progress.training_seconds
+                if progress.training_seconds
+                else 0.0,
+                "finished_at": utc_now() if status != "running" else None,
+            }
+        )
         if status != "running":
-            metadata["sessions"][-1].update({
-                "finished_at": utc_now(), "status": status,
-                "duration_seconds": perf_counter() - session_started,
-            })
+            metadata["sessions"][-1].update(
+                {
+                    "finished_at": utc_now(),
+                    "status": status,
+                    "duration_seconds": perf_counter() - session_started,
+                }
+            )
         write_json(run_dir / "run.json", metadata)
 
     try:
         with MetricsRecorder(run_dir) as metrics:
+
             def checkpoint() -> None:
                 progress.wall_seconds = wall_base + perf_counter() - session_started
                 payload = checkpoint_payload(
-                    run_id=run_id, config=config, agent=agent, replay=replay,
-                    opponent_rng=opponent_rng, progress=asdict(progress), metric_offsets=metrics.offsets(),
+                    run_id=run_id,
+                    config=config,
+                    agent=agent,
+                    replay=replay,
+                    opponent_rng=opponent_rng,
+                    progress=asdict(progress),
+                    metric_offsets=metrics.offsets(),
                 )
                 filename = (
                     f"episode-{progress.episodes:08d}_"
@@ -254,8 +282,14 @@ def run_training(
                 started = perf_counter()
                 try:
                     completed = evaluate_agent(
-                        agent, evaluation, metrics, run_id=run_id, session=session,
-                        episode=progress.episodes, decisions=progress.decisions, should_stop=stop,
+                        agent,
+                        evaluation,
+                        metrics,
+                        run_id=run_id,
+                        session=session,
+                        episode=progress.episodes,
+                        decisions=progress.decisions,
+                        should_stop=stop,
                     )
                     if completed:
                         progress.last_evaluation_episode = progress.episodes
@@ -269,7 +303,8 @@ def run_training(
                 # Keep initialization recoverable if baseline evaluation fails.
                 checkpoint()
             if progress.last_evaluation_episode != progress.episodes and (
-                progress.episodes == 0 or progress.episodes % evaluation["every_episodes"] == 0
+                progress.episodes == 0
+                or progress.episodes % evaluation["every_episodes"] == 0
             ):
                 evaluate()
                 checkpoint()
@@ -296,11 +331,16 @@ def run_training(
                     action = agent.select_action(observation, epsilon)
                     next_observation, reward, done = environment.step(action)
                     decisions += 1
-                    decision_rows.append({
-                        "session": session, "episode": episode, "decision": decisions,
-                        "learning_updates": agent.learning_updates, "epsilon": epsilon,
-                        "learning_rate": agent.optimizer.param_groups[0]["lr"],
-                    })
+                    decision_rows.append(
+                        {
+                            "session": session,
+                            "episode": episode,
+                            "decision": decisions,
+                            "learning_updates": agent.learning_updates,
+                            "epsilon": epsilon,
+                            "learning_rate": agent.optimizer.param_groups[0]["lr"],
+                        }
+                    )
                     replay.add(
                         Transition(observation, action, reward, next_observation, done)
                     )
@@ -312,11 +352,17 @@ def run_training(
                         for _ in range(training["gradient_updates_per_step"]):
                             lr_used = agent.optimizer.param_groups[0]["lr"]
                             loss = agent.learn(replay.sample(training["batch_size"]))
-                            update_rows.append({
-                                "session": session, "episode": episode, "decision": decisions,
-                                "update": agent.learning_updates, "loss": loss,
-                                "lr_used": lr_used, "lr_next": agent.optimizer.param_groups[0]["lr"],
-                            })
+                            update_rows.append(
+                                {
+                                    "session": session,
+                                    "episode": episode,
+                                    "decision": decisions,
+                                    "update": agent.learning_updates,
+                                    "loss": loss,
+                                    "lr_used": lr_used,
+                                    "lr_next": agent.optimizer.param_groups[0]["lr"],
+                                }
+                            )
                     observation = next_observation
                     episode_return += reward
                 duration = perf_counter() - started
@@ -327,18 +373,36 @@ def run_training(
                     metrics.write("decisions", row)
                 for row in update_rows:
                     metrics.write("updates", row)
-                metrics.write("episodes", {
-                    "session": session, "episode": episode, "seat": "x" if player == PLAYER_X else "o",
-                    "outcome": int(episode_return), "return": episode_return,
-                    "decisions": episode_decisions, "updates": agent.learning_updates - start_updates,
-                    "total_decisions": decisions, "total_updates": agent.learning_updates,
-                    "duration_seconds": duration, "training_seconds": progress.training_seconds,
-                })
+                metrics.write(
+                    "episodes",
+                    {
+                        "session": session,
+                        "episode": episode,
+                        "seat": "x" if player == PLAYER_X else "o",
+                        "outcome": int(episode_return),
+                        "return": episode_return,
+                        "decisions": episode_decisions,
+                        "updates": agent.learning_updates - start_updates,
+                        "total_decisions": decisions,
+                        "total_updates": agent.learning_updates,
+                        "duration_seconds": duration,
+                        "training_seconds": progress.training_seconds,
+                    },
+                )
                 window_returns.append(episode_return)
                 if episode % artifacts["metrics_every_episodes"] == 0:
                     metrics.flush()
                     update_metadata("running")
-                    logger.info("Episode %s/%s | return %.3f | updates %s | epsilon %.4f | LR %.6g | elapsed %.1fs", episode, training["episodes"], sum(window_returns) / len(window_returns), agent.learning_updates, epsilon, agent.optimizer.param_groups[0]["lr"], progress.wall_seconds)
+                    logger.info(
+                        "Episode %s/%s | return %.3f | updates %s | epsilon %.4f | LR %.6g | elapsed %.1fs",
+                        episode,
+                        training["episodes"],
+                        sum(window_returns) / len(window_returns),
+                        agent.learning_updates,
+                        epsilon,
+                        agent.optimizer.param_groups[0]["lr"],
+                        progress.wall_seconds,
+                    )
                 if stop():
                     break
                 if episode % evaluation["every_episodes"] == 0:
@@ -350,18 +414,32 @@ def run_training(
                     plot_training_metrics(run_dir, artifacts["metrics_every_episodes"])
 
             status = "interrupted" if stop() else "completed"
-            if status == "completed" and progress.last_evaluation_episode != progress.episodes:
-                if not evaluate():
-                    status = "interrupted"
+            if (
+                status == "completed"
+                and progress.last_evaluation_episode != progress.episodes
+                and not evaluate()
+            ):
+                status = "interrupted"
             if status == "interrupted" or artifacts["save_final_checkpoint"]:
                 checkpoint()
             metrics.flush()
             plot_training_metrics(run_dir, artifacts["metrics_every_episodes"])
             update_metadata(status)
-            logger.info("%s: %s episodes, %s updates | training %.1fs | evaluation %.1fs | total %.1fs | %s", status, progress.episodes, agent.learning_updates, progress.training_seconds, progress.evaluation_seconds, progress.wall_seconds, run_dir)
+            logger.info(
+                "%s: %s episodes, %s updates | training %.1fs | evaluation %.1fs | total %.1fs | %s",
+                status,
+                progress.episodes,
+                agent.learning_updates,
+                progress.training_seconds,
+                progress.evaluation_seconds,
+                progress.wall_seconds,
+                run_dir,
+            )
     except BaseException as error:
         try:
-            update_metadata("interrupted" if isinstance(error, KeyboardInterrupt) else "failed")
+            update_metadata(
+                "interrupted" if isinstance(error, KeyboardInterrupt) else "failed"
+            )
         except Exception:
             logger.exception("Could not preserve final run metadata")
         try:
@@ -378,17 +456,37 @@ def run_training(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group()
-    source.add_argument("--config", type=Path, help="YAML settings (default: config.example.yaml)")
-    source.add_argument("--resume", type=Path, help="Resume a checkpoint in its existing run directory")
-    parser.add_argument("--episodes", type=int, help="Override the total episode target, including prior episodes")
+    source.add_argument(
+        "--config", type=Path, help="YAML settings (default: config.example.yaml)"
+    )
+    source.add_argument(
+        "--resume", type=Path, help="Resume a checkpoint in its existing run directory"
+    )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        help="Override the total episode target, including prior episodes",
+    )
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"))
     args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+    )
     try:
         if args.resume is not None:
-            config = resolve_config(load_checkpoint(args.resume)["config"], DEFAULT_RUNS_DIR, episodes=args.episodes, device=args.device)
+            config = resolve_config(
+                load_checkpoint(args.resume)["config"],
+                DEFAULT_RUNS_DIR,
+                episodes=args.episodes,
+                device=args.device,
+            )
         else:
-            config = load_config(args.config or DEFAULT_CONFIG_PATH, DEFAULT_RUNS_DIR, episodes=args.episodes, device=args.device)
+            config = load_config(
+                args.config or DEFAULT_CONFIG_PATH,
+                DEFAULT_RUNS_DIR,
+                episodes=args.episodes,
+                device=args.device,
+            )
     except (ValueError, OSError) as error:
         parser.error(str(error))
     requested = False

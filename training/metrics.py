@@ -11,15 +11,51 @@ from pathlib import Path
 from typing import Any, TextIO
 
 SCHEMAS = {
-    "decisions": ["session", "episode", "decision", "learning_updates", "epsilon", "learning_rate"],
-    "updates": ["session", "episode", "decision", "update", "loss", "lr_used", "lr_next"],
+    "decisions": [
+        "session",
+        "episode",
+        "decision",
+        "learning_updates",
+        "epsilon",
+        "learning_rate",
+    ],
+    "updates": [
+        "session",
+        "episode",
+        "decision",
+        "update",
+        "loss",
+        "lr_used",
+        "lr_next",
+    ],
     "episodes": [
-        "session", "episode", "seat", "outcome", "return", "decisions", "updates",
-        "total_decisions", "total_updates", "duration_seconds", "training_seconds",
+        "session",
+        "episode",
+        "seat",
+        "outcome",
+        "return",
+        "decisions",
+        "updates",
+        "total_decisions",
+        "total_updates",
+        "duration_seconds",
+        "training_seconds",
     ],
     "evaluation": [
-        "session", "episode", "decision", "update", "opponent", "seat", "games",
-        "wins", "draws", "losses", "average_return", "duration_seconds", "status", "db_run_id",
+        "session",
+        "episode",
+        "decision",
+        "update",
+        "opponent",
+        "seat",
+        "games",
+        "wins",
+        "draws",
+        "losses",
+        "average_return",
+        "duration_seconds",
+        "status",
+        "db_run_id",
     ],
 }
 
@@ -55,8 +91,11 @@ def restore_metric_offsets(run_dir: Path, offsets: Mapping[str, int]) -> None:
     for table, offset in offsets.items():
         path = run_dir / f"{table}.csv"
         if (
-            isinstance(offset, bool) or not isinstance(offset, int) or offset < 0
-            or not path.exists() or path.stat().st_size < offset
+            isinstance(offset, bool)
+            or not isinstance(offset, int)
+            or offset < 0
+            or not path.exists()
+            or path.stat().st_size < offset
         ):
             raise ValueError(f"Metrics cannot be restored to checkpoint: {table}")
         if path.stat().st_size > offset:

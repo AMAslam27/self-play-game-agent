@@ -50,11 +50,18 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
     decisions = read_metrics(run_dir, "decisions")
     updates = read_metrics(run_dir, "updates")
     episodes = read_metrics(run_dir, "episodes")
-    evaluation = [row for row in read_metrics(run_dir, "evaluation") if row["status"] == "completed"]
+    evaluation = [
+        row
+        for row in read_metrics(run_dir, "evaluation")
+        if row["status"] == "completed"
+    ]
     saved = []
 
     fig, ax = _figure("Exploration", "Agent decisions", "Epsilon used")
-    ax.plot([int(row["decision"]) for row in decisions], [float(row["epsilon"]) for row in decisions])
+    ax.plot(
+        [int(row["decision"]) for row in decisions],
+        [float(row["epsilon"]) for row in decisions],
+    )
     ax.set_ylim(0, 1.05)
     path = plots_dir / "epsilon.png"
     _save(fig, path)
@@ -62,11 +69,17 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
 
     fig, ax = _figure("Learning rate", "Learning updates", "Learning rate used")
     if updates:
-        ax.step([int(row["update"]) for row in updates], [float(row["lr_used"]) for row in updates], where="post")
+        ax.step(
+            [int(row["update"]) for row in updates],
+            [float(row["lr_used"]) for row in updates],
+            where="post",
+        )
     elif decisions:
         ax.plot([0], [float(decisions[0]["learning_rate"])], "o")
     else:
-        ax.text(0.5, 0.5, "No learning updates yet", transform=ax.transAxes, ha="center")
+        ax.text(
+            0.5, 0.5, "No learning updates yet", transform=ax.transAxes, ha="center"
+        )
     path = plots_dir / "learning_rate.png"
     _save(fig, path)
     saved.append(path)
@@ -86,21 +99,32 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
             grouped[episode] = (int(row["update"]), grouped[episode][1])
         ax.plot(
             [value[0] for value in grouped.values()],
-            _rolling([sum(value[1]) / len(value[1]) for value in grouped.values()], window_episodes),
+            _rolling(
+                [sum(value[1]) / len(value[1]) for value in grouped.values()],
+                window_episodes,
+            ),
             label=f"Rolling episode mean (window {window_episodes})",
         )
         ax.legend()
     else:
-        ax.text(0.5, 0.5, "Warm-up: no loss recorded", transform=ax.transAxes, ha="center")
+        ax.text(
+            0.5, 0.5, "Warm-up: no loss recorded", transform=ax.transAxes, ha="center"
+        )
     path = plots_dir / "loss.png"
     _save(fig, path)
     saved.append(path)
 
-    fig, ax = _figure("Training return", "Completed episodes", "Undiscounted episode return")
+    fig, ax = _figure(
+        "Training return", "Completed episodes", "Undiscounted episode return"
+    )
     x = [int(row["episode"]) for row in episodes]
     returns = [float(row["return"]) for row in episodes]
     ax.scatter(x, returns, alpha=0.12, s=8, label="Raw return")
-    ax.plot(x, _rolling(returns, window_episodes), label=f"Rolling mean ({window_episodes} episodes)")
+    ax.plot(
+        x,
+        _rolling(returns, window_episodes),
+        label=f"Rolling mean ({window_episodes} episodes)",
+    )
     ax.set_ylim(-1.1, 1.1)
     ax.legend()
     path = plots_dir / "training_return.png"
@@ -115,10 +139,18 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
         for outcome, label in ((1, "Win"), (0, "Draw"), (-1, "Loss")):
             ax.plot(
                 [int(row["episode"]) for row in rows],
-                _rolling([float(int(row["outcome"]) == outcome) for row in rows], window_episodes),
+                _rolling(
+                    [float(int(row["outcome"]) == outcome) for row in rows],
+                    window_episodes,
+                ),
                 label=label,
             )
-        ax.set(title=f"Training as {seat.upper()}", xlabel="Completed episodes", ylabel="Rolling outcome rate", ylim=(0, 1.05))
+        ax.set(
+            title=f"Training as {seat.upper()}",
+            xlabel="Completed episodes",
+            ylabel="Rolling outcome rate",
+            ylim=(0, 1.05),
+        )
         ax.legend()
     path = plots_dir / "training_outcomes.png"
     _save(fig, path)
@@ -129,10 +161,24 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
     FigureCanvasAgg(fig)
     axes = fig.subplots(max(1, len(combinations)), 1, squeeze=False)
     for (opponent, seat), ax in zip(combinations, axes[:, 0], strict=False):
-        rows = [row for row in evaluation if row["opponent"] == opponent and row["seat"] == seat]
+        rows = [
+            row
+            for row in evaluation
+            if row["opponent"] == opponent and row["seat"] == seat
+        ]
         for column, label in (("wins", "Win"), ("draws", "Draw"), ("losses", "Loss")):
-            ax.plot([int(row["episode"]) for row in rows], [int(row[column]) / int(row["games"]) for row in rows], marker="o", label=label)
-        ax.set(title=f"Greedy evaluation vs {opponent}, agent {seat.upper()}", xlabel="Completed training episodes", ylabel="Outcome rate", ylim=(0, 1.05))
+            ax.plot(
+                [int(row["episode"]) for row in rows],
+                [int(row[column]) / int(row["games"]) for row in rows],
+                marker="o",
+                label=label,
+            )
+        ax.set(
+            title=f"Greedy evaluation vs {opponent}, agent {seat.upper()}",
+            xlabel="Completed training episodes",
+            ylabel="Outcome rate",
+            ylim=(0, 1.05),
+        )
         ax.legend()
     if not combinations:
         axes[0, 0].text(0.5, 0.5, "No completed evaluation batches", ha="center")
@@ -141,7 +187,11 @@ def plot_training_metrics(run_dir: Path, window_episodes: int = 100) -> list[Pat
     saved.append(path)
 
     fig, ax = _figure("Training time", "Completed episodes", "Cumulative seconds")
-    ax.plot(x, [float(row["training_seconds"]) for row in episodes], label="Environment and learning")
+    ax.plot(
+        x,
+        [float(row["training_seconds"]) for row in episodes],
+        label="Environment and learning",
+    )
     elapsed = 0.0
     eval_x, eval_y = [], []
     for row in read_metrics(run_dir, "evaluation"):

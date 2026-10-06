@@ -86,6 +86,7 @@ BLOCK_FACTORIES: dict[str, BlockFactory] = {
     ),
 }
 
+
 def build_blocks(
     input_size: int,
     hidden_sizes: Sequence[int],
@@ -105,7 +106,9 @@ def build_blocks(
     if not hidden_sizes:
         raise ValueError("At least one hidden block is required")
     if not len(hidden_sizes) == len(block_types) == len(activations):
-        raise ValueError("hidden_sizes, block_types, and activations must have equal lengths")
+        raise ValueError(
+            "hidden_sizes, block_types, and activations must have equal lengths"
+        )
     if not 0.0 <= dropout_probability < 1.0:
         raise ValueError("Dropout probability must be in [0, 1)")
 

@@ -141,7 +141,9 @@ def resolve_config(
     optimizer = training["optimizer"]
     if optimizer["name"] not in ("adam", "adamw", "sgd"):
         raise ValueError("Unsupported optimizer")
-    _require_finite_number(optimizer["learning_rate"], "learning_rate", allow_zero=False)
+    _require_finite_number(
+        optimizer["learning_rate"], "learning_rate", allow_zero=False
+    )
     _require_finite_number(optimizer["weight_decay"], "weight_decay", allow_zero=True)
     scheduler = training["lr_scheduler"]
     if scheduler["name"] not in ("none", "step", "exponential"):
@@ -155,7 +157,9 @@ def resolve_config(
         _require_positive_integer(scheduler["options"].get("step_size", 0), "step_size")
         scheduler["options"].setdefault("gamma", 0.1)
     if scheduler["name"] != "none":
-        _require_finite_number(scheduler["options"].get("gamma"), "gamma", allow_zero=False)
+        _require_finite_number(
+            scheduler["options"].get("gamma"), "gamma", allow_zero=False
+        )
 
     network = config["network"]
     for key in ("hidden_sizes", "block_types", "activations"):
@@ -207,7 +211,9 @@ def resolve_config(
         raise ValueError("Evaluation epsilon must be zero")
     artifacts = config["artifacts"]
     for key in (
-        "checkpoint_every_episodes", "metrics_every_episodes", "plot_every_episodes"
+        "checkpoint_every_episodes",
+        "metrics_every_episodes",
+        "plot_every_episodes",
     ):
         _require_positive_integer(artifacts[key], f"artifacts.{key}")
     for value in (

@@ -17,6 +17,7 @@ dev = [
     "pytest-cov",
     "ruff",
     "mypy",
+    "types-pyyaml (>=6.0.12.20260906,<7.0.0.0)",
 ]
 
 [tool.poetry]
