@@ -1,15 +1,26 @@
+x-game-base: &game-base
+  build: .
+  init: true
+  volumes:
+    - .:/app
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+
 services:
   tictactoe:
-    build: .
+    <<: *game-base
     stdin_open: true
     tty: true
-    volumes:
-      - .:/app
     command: ["--x", "human", "--o", "human"]
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+
+  training:
+    <<: *game-base
+    profiles: ["training"]
+    tty: true
+    entrypoint: ["python", "-m", "training.tictactoe.train"]
+    command: ["--config", "training/tictactoe/config.example.yaml"]
