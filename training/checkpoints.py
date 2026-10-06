@@ -20,7 +20,7 @@ CHECKPOINT_VERSION = 1
 
 
 def capture_rng_state() -> dict[str, Any]:
-    numpy_state = np.random.get_state()
+    numpy_state = np.random.get_state(legacy=True)
     return {
         "python": random.getstate(),
         "numpy": (

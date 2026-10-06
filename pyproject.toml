@@ -85,7 +85,7 @@ pretty = true
 show_error_codes = true
 explicit_package_bases = true
 namespace_packages = true
-exclude = "^tests/"
+exclude = '^(tests|tmp)/'
 
 
 [tool.pytest.ini_options]
