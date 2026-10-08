@@ -13,7 +13,19 @@ def default_plot_path(run_id, started_at, game="tictactoe"):
     return PROJECT_ROOT / "results" / game / "plots" / f"{stamp}_run-{run_id}.png"
 
 
+def display_project_path(path: str | Path) -> str:
+    """Show project files relative to the root, including inside Docker."""
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(PROJECT_ROOT.resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
 def save_run_plot(results, policy_x, policy_o, recorder, output_path=None):
+    if sum(results.values()) < 2:
+        return None
+
     path = (
         Path(output_path)
         if output_path is not None

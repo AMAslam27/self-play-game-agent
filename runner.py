@@ -12,7 +12,7 @@ import random
 from contextlib import closing
 from pathlib import Path
 
-from evaluation.artifacts import save_run_plot
+from evaluation.artifacts import display_project_path, save_run_plot
 from evaluation.database import DEFAULT_DB_PATH, connect_database
 from evaluation.model_registry import (
     DEFAULT_REGISTRY_PATH,
@@ -139,7 +139,8 @@ def prepare_player(args, seat):
         loaded.run_id, experiment_name, str(path), identity, str(selection), protocol_id
     )
     print(
-        f"{seat.upper()} agent: {experiment_name} | run {loaded.run_id} | checkpoint {path} | SHA-256 {identity}"
+        f"{seat.upper()} agent: {experiment_name} | run {loaded.run_id} | "
+        f"checkpoint {display_project_path(path)} | SHA-256 {identity}"
     )
     return SavedAgentPlayer(
         loaded.model, TicTacToePlayerAdapter(), device=args.agent_device
@@ -242,7 +243,7 @@ def main():
                 batch_results, args.x, args.o, recorder, output_path=output_path
             )
             if saved_path is not None:
-                print(f"Chart saved to: {saved_path}")
+                print(f"Chart saved to: {display_project_path(saved_path)}")
 
             if quit_early or not interactive:
                 break

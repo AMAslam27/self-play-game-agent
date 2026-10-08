@@ -129,6 +129,10 @@ between two different saved models. Models are loaded once and play greedy
 legal moves without learning. The resolved experiment, checkpoint path, and
 hash are displayed and recorded with match results.
 
+Match charts are generated only for batches with at least two completed games,
+including when `--plot-file` is supplied. Displayed project paths are relative
+to the project root.
+
 Completed training runs register their final checkpoints automatically in
 `results/models.sqlite3`. Import older runs before using automatic selection:
 
