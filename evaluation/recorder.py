@@ -1,6 +1,19 @@
 """Record one batch of games with a transaction per completed game."""
 
+from dataclasses import dataclass
 from datetime import UTC, datetime
+
+
+@dataclass(frozen=True)
+class ModelIdentity:
+    """Identify the exact inference checkpoint used by one match participant."""
+
+    experiment_run_id: str
+    experiment_name: str
+    checkpoint_path: str
+    checkpoint_hash: str
+    selection: str
+    protocol_id: str | None = None
 
 
 def utc_timestamp():
@@ -14,7 +27,16 @@ class RunRecorder:
         self.finished = False
         self.started_at: str | None = None
 
-    def start_run(self, policy_x, policy_o, requested_games, seed=None):
+    def start_run(
+        self,
+        policy_x,
+        policy_o,
+        requested_games,
+        seed=None,
+        *,
+        model_x: ModelIdentity | None = None,
+        model_o: ModelIdentity | None = None,
+    ):
         if self.run_id is not None:
             raise ValueError("This recorder has already started a run")
         if requested_games <= 0:
@@ -33,6 +55,21 @@ class RunRecorder:
             run_id = cursor.lastrowid
             if run_id is None:
                 raise RuntimeError("Database did not return a run ID")
+            for seat, model in (("x", model_x), ("o", model_o)):
+                if model is not None:
+                    self.connection.execute(
+                        "INSERT INTO run_models VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            run_id,
+                            seat,
+                            model.experiment_run_id,
+                            model.experiment_name,
+                            model.checkpoint_path,
+                            model.checkpoint_hash,
+                            model.selection,
+                            model.protocol_id,
+                        ),
+                    )
 
         self.started_at = started_at
         self.run_id = run_id

@@ -114,7 +114,33 @@ and [complete plot snapshot](docs/results/2026-10-05-random/).
 poetry run python runner.py --x human --o minimax
 ```
 
-Available players are `human`, `random`, and `minimax`.
+Available players are `human`, `random`, `minimax`, and `dqn`.
+
+Play against the best registered saved agent:
+
+```sh
+poetry run python runner.py --x human --o dqn --o-agent best
+```
+
+Use `--o-agent latest` for the most recently completed available run, or choose
+any checkpoint explicitly with `--o-checkpoint <path>`. The corresponding
+`--x-agent` and `--x-checkpoint` options support agents as X, including matches
+between two different saved models. Models are loaded once and play greedy
+legal moves without learning. The resolved experiment, checkpoint path, and
+hash are displayed and recorded with match results.
+
+Completed training runs register their final checkpoints automatically in
+`results/models.sqlite3`. Import older runs before using automatic selection:
+
+```sh
+poetry run python -m evaluation.model_registry training/tictactoe/runs/<run-id>
+```
+
+Use `--registry <path>` for a different registry in both training and play,
+and `--agent-device cpu` to run saved players on CPU. If eligible models use
+different evaluation protocols, select one with `--o-protocol <protocol-id>`
+(or `--x-protocol`). The [ranking documentation](docs/model-ranking.md)
+explains the criteria and how to inspect protocol IDs.
 
 ## Project structure
 
@@ -142,6 +168,5 @@ poetry run pytest
 ## Planned work
 
 - Evaluate training stability across multiple seeds.
-- Integrate trained models into the interactive game runner.
 - Add self-play training.
 - Extend the environment and training framework to additional games.
