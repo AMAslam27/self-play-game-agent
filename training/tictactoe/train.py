@@ -12,6 +12,7 @@ import signal
 import subprocess
 from collections import deque
 from collections.abc import Callable, Mapping
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -23,6 +24,11 @@ import numpy as np
 import torch
 import yaml
 
+from evaluation.model_registry import (
+    DEFAULT_REGISTRY_PATH,
+    connect_registry,
+    import_tictactoe_run,
+)
 from games.tictactoe.rules import PLAYER_O, PLAYER_X
 from models.tictactoe import TicTacToeQNetwork
 from training.checkpoints import (
@@ -131,9 +137,13 @@ def run_training(
     *,
     resume: Path | None = None,
     should_stop: Callable[[], bool] | None = None,
+    registry_path: Path | None = None,
 ) -> Path:
     """Train or resume at episode boundaries; return the run directory."""
     session_started = perf_counter()
+    registry_path = (
+        registry_path if registry_path is not None else DEFAULT_REGISTRY_PATH
+    )
     config = resolve_config(config, DEFAULT_RUNS_DIR)
     stop = should_stop if should_stop is not None else lambda: False
     experiment, training = config["experiment"], config["training"]
@@ -196,6 +206,17 @@ def run_training(
         restore_checkpoint(saved, agent, replay, opponent_rng, Observation)
         restore_metric_offsets(run_dir, saved["metric_offsets"])
 
+    # A resumed run must cease being eligible until it completes again.
+    with closing(connect_registry(registry_path)) as registry, registry:
+        registry.execute(
+            "UPDATE model_checkpoints SET is_final=0 WHERE run_id=? AND game='tictactoe' AND model_type='dqn'",
+            (run_id,),
+        )
+    metadata["model_registry"] = {
+        "status": "pending",
+        "path": str(registry_path.resolve()),
+    }
+
     session = len(metadata["sessions"]) + 1
     metadata["sessions"].append(
         {
@@ -246,6 +267,8 @@ def run_training(
             }
         )
         if status != "running":
+            if status != "completed":
+                metadata["model_registry"]["status"] = "not_registered"
             metadata["sessions"][-1].update(
                 {
                     "finished_at": utc_now(),
@@ -450,6 +473,28 @@ def run_training(
     finally:
         logger.removeHandler(log_handler)
         log_handler.close()
+    if metadata["status"] == "completed":
+        try:
+            with closing(connect_registry(registry_path)) as registry:
+                identity = import_tictactoe_run(registry, run_dir)
+            metadata["model_registry"] = {
+                "status": "registered",
+                "path": str(registry_path.resolve()),
+                "checkpoint_hash": identity,
+            }
+            logger.info("Registered final checkpoint %s", identity)
+        except Exception as error:
+            # A registry failure must not change a successfully trained run to failed.
+            metadata["model_registry"] = {
+                "status": "failed",
+                "path": str(registry_path.resolve()),
+                "error": str(error),
+            }
+            logger.exception(
+                "Training completed, but model registration failed; retry using python -m evaluation.model_registry %s",
+                run_dir,
+            )
+        write_json(run_dir / "run.json", metadata)
     return run_dir
 
 
@@ -468,6 +513,12 @@ def main() -> None:
         help="Override the total episode target, including prior episodes",
     )
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"))
+    parser.add_argument(
+        "--registry",
+        type=Path,
+        default=DEFAULT_REGISTRY_PATH,
+        help="Model registry for completed runs",
+    )
     args = parser.parse_args()
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
@@ -500,7 +551,12 @@ def main() -> None:
 
     previous_handler = signal.signal(signal.SIGINT, request_stop)
     try:
-        run_training(config, resume=args.resume, should_stop=lambda: requested)
+        run_training(
+            config,
+            resume=args.resume,
+            should_stop=lambda: requested,
+            registry_path=args.registry,
+        )
     finally:
         signal.signal(signal.SIGINT, previous_handler)
 

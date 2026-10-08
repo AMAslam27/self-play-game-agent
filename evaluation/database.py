@@ -25,6 +25,18 @@ CREATE TABLE IF NOT EXISTS games (
     winner INTEGER NOT NULL CHECK (winner IN (-1, 0, 1)),
     PRIMARY KEY (run_id, game_number)
 );
+
+CREATE TABLE IF NOT EXISTS run_models (
+    run_id INTEGER NOT NULL REFERENCES runs(id),
+    seat TEXT NOT NULL CHECK (seat IN ('x', 'o')),
+    experiment_run_id TEXT NOT NULL,
+    experiment_name TEXT NOT NULL,
+    checkpoint_path TEXT NOT NULL,
+    checkpoint_hash TEXT NOT NULL,
+    selection TEXT NOT NULL,
+    protocol_id TEXT,
+    PRIMARY KEY (run_id, seat)
+);
 """
 
 

@@ -355,11 +355,11 @@ def test_main_passes_results_to_plotter(monkeypatch, capsys):
     assert "Chart saved to: results/chart.png" in capsys.readouterr().out
 
 
-def test_main_plots_by_default(monkeypatch, capsys):
+def test_main_plots_larger_batches_by_default(monkeypatch, capsys):
 
     plotter = FakePlotter()
     monkeypatch.setattr(artifacts, "plot_results", plotter)
-    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "random", "--o", "random", "--quiet"])
+    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "random", "--o", "random", "--games", "2", "--quiet"])
     monkeypatch.setattr(runner, "play_game", lambda *args, **kwargs: EMPTY)
     runner.main()
     assert len(plotter.calls) == 1
@@ -377,7 +377,7 @@ def test_main_does_not_report_chart_for_empty_run(monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["runner.py", "--x", "human", "--quiet", "--plot-file", "results/chart.png"])
     monkeypatch.setattr(runner, "play_game", lambda *args, **kwargs: None)
     runner.main()
-    assert plotter.calls[0][0] == {PLAYER_X: 0, PLAYER_O: 0, EMPTY: 0}
+    assert plotter.calls == []
     assert "Chart saved" not in capsys.readouterr().out
 
 
@@ -461,22 +461,22 @@ def test_parse_args_database_override(monkeypatch):
 
 
 def test_replay_plots_each_batch_separately(monkeypatch, isolate_runner_plotting):
-    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "human", "--quiet"])
-    outcomes = iter([1, -1])
+    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "human", "--games", "2", "--quiet"])
+    outcomes = iter([1, 1, -1, -1])
     answers = iter(["y", "n"])
     monkeypatch.setattr(runner, "play_game", lambda *args, **kwargs: next(outcomes))
     monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
     runner.main()
     calls = isolate_runner_plotting.calls
-    assert calls[0][0] == {1: 1, 0: 0, -1: 0}
-    assert calls[1][0] == {1: 0, 0: 0, -1: 1}
+    assert calls[0][0] == {1: 2, 0: 0, -1: 0}
+    assert calls[1][0] == {1: 0, 0: 0, -1: 2}
     assert calls[0][3]["output_path"].name.endswith("_run-1.png")
     assert calls[1][3]["output_path"].name.endswith("_run-2.png")
 
 
 def test_replay_does_not_overwrite_explicit_plot_path(monkeypatch, isolate_runner_plotting):
 
-    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "human", "--quiet", "--plot-file", "results/chart.png"])
+    monkeypatch.setattr("sys.argv", ["runner.py", "--x", "human", "--games", "2", "--quiet", "--plot-file", "results/chart.png"])
     answers = iter(["y", "n"])
     monkeypatch.setattr(runner, "play_game", lambda *args, **kwargs: 0)
     monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
