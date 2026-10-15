@@ -6,7 +6,7 @@ from unittest.mock import patch
 import torch
 from torch import nn
 
-from models.tictactoe import TicTacToeQNetwork
+from models.tictactoe_q_network import TicTacToeQNetwork
 from training.dqn import DQNAgent
 from training.tictactoe.environment import TicTacToeAdapter
 from training.utils import ReplayBuffer, Transition
@@ -44,6 +44,21 @@ class TestDQNAgent(unittest.TestCase):
         with torch.no_grad():
             agent.online_network.bias.fill_(1.0)
         self.assertEqual(agent.select_action(Features()), 0)
+
+    def test_greedy_ignores_illegal_nan_but_rejects_nonfinite_legal_values(self):
+        agent = make_agent()
+        with torch.no_grad():
+            agent.online_network.bias[1] = float("nan")
+        self.assertEqual(agent.select_action(Features()), 2)
+        for training in (True, False):
+            for value in (float("nan"), float("inf"), -float("inf")):
+                with self.subTest(training=training, value=value):
+                    agent.online_network.train(training)
+                    with torch.no_grad():
+                        agent.online_network.bias[2] = value
+                    with self.assertRaisesRegex(ValueError, "Legal Q-values must be finite"):
+                        agent.select_action(Features())
+                    self.assertEqual(agent.online_network.training, training)
 
     def test_exploration_uses_only_legal_actions_without_network_inference(self):
         agent = make_agent(rng=random.Random(42))

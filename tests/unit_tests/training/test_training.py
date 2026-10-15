@@ -12,7 +12,7 @@ import torch
 from training.checkpoints import capture_rng_state, load_checkpoint, preserve_rng_state
 from training.config import load_config, resolve_config
 from training.metrics import read_metrics
-from training.plots import plot_training_metrics
+from training.training_plots import plot_training_metrics
 from training.tictactoe.train import DEFAULT_CONFIG_PATH, DEFAULT_RUNS_DIR, run_training
 
 

@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from training.config import PROJECT_ROOT, resolve_config
+from training.utils import resolve_lr_scheduler_config, resolve_optimizer_config
 
 
 class TestTrainingConfig(unittest.TestCase):
@@ -30,6 +31,38 @@ class TestTrainingConfig(unittest.TestCase):
     def test_step_scheduler_default_gamma_is_persisted(self):
         config = resolve_config({"training": {"lr_scheduler": {"name": "step", "options": {"step_size": 5}}}}, Path("runs"))
         self.assertEqual(config["training"]["lr_scheduler"]["options"]["gamma"], 0.1)
+
+    def test_optimizer_resolution_is_consistent_and_does_not_mutate_options(self):
+        supplied = {"name": "sgd", "options": {"momentum": 0.9}}
+        original = copy.deepcopy(supplied)
+        direct = resolve_optimizer_config(supplied)
+        config = resolve_config({"training": {"optimizer": supplied}}, Path("runs"))
+        self.assertEqual(config["training"]["optimizer"], direct)
+        direct["options"]["momentum"] = 0.5
+        self.assertEqual(supplied, original)
+
+    def test_scheduler_resolution_is_consistent_and_does_not_mutate_options(self):
+        supplied = {"name": "step", "options": {"step_size": 5}}
+        original = copy.deepcopy(supplied)
+        direct = resolve_lr_scheduler_config(supplied)
+        config = resolve_config({"training": {"lr_scheduler": supplied}}, Path("runs"))
+        self.assertEqual(config["training"]["lr_scheduler"], direct)
+        self.assertEqual(direct["options"]["gamma"], 0.1)
+        self.assertEqual(supplied, original)
+
+    def test_reserved_options_are_rejected_by_both_configuration_entry_points(self):
+        cases = [
+            ("optimizer", resolve_optimizer_config, {"options": {"lr": 0.1}}),
+            ("optimizer", resolve_optimizer_config, {"options": {"weight_decay": 0.1}}),
+            ("lr_scheduler", resolve_lr_scheduler_config,
+             {"name": "step", "options": {"step_size": 5, "optimizer": "external"}}),
+        ]
+        for section, resolver, supplied in cases:
+            with self.subTest(section=section, supplied=supplied):
+                with self.assertRaises(ValueError):
+                    resolver(supplied)
+                with self.assertRaises(ValueError):
+                    resolve_config({"training": {section: supplied}}, Path("runs"))
 
     def test_invalid_settings_are_rejected(self):
         cases = [

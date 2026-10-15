@@ -1,6 +1,7 @@
 import pytest
 
-from players.minimax import minimax_policy, score_position, winner
+from games.tictactoe.rules import winner
+from players.minimax import minimax_policy, score_position
 from tests.unit_tests.common.mock_utils import FakeGame
 
 

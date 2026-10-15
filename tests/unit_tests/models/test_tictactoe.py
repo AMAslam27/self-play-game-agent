@@ -6,7 +6,7 @@ import torch
 import yaml
 from torch import nn
 
-from models.tictactoe import TicTacToeQNetwork
+from models.tictactoe_q_network import TicTacToeQNetwork
 
 
 class TestTicTacToeQNetwork(unittest.TestCase):

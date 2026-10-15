@@ -1,6 +1,6 @@
 import pytest
 
-from evaluation import plots
+from evaluation import match_plots as plots
 from tests.unit_tests.common.mock_utils import FakeFigure, FakePath
 
 

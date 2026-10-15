@@ -4,8 +4,8 @@ import pytest
 import torch
 from torch import nn
 
-from models.tictactoe import TicTacToeQNetwork
-from players.checkpoints import load_model_checkpoint
+from models.tictactoe_q_network import TicTacToeQNetwork
+from players.load_checkpoints import load_model_checkpoint
 from training.checkpoints import CHECKPOINT_VERSION, checkpoint_payload
 from training.dqn import DQNAgent
 from training.utils import ReplayBuffer

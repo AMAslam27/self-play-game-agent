@@ -8,7 +8,7 @@ import runner
 from evaluation.database import connect_database
 from evaluation.model_registry import checkpoint_hash, connect_registry
 from games.tictactoe.rules import TicTacToe
-from players.checkpoint_selection import resolve_checkpoint
+from players.load_checkpoints import resolve_checkpoint
 from tests.unit_tests.training.test_training import short_config
 from training.tictactoe import train
 
