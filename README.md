@@ -80,33 +80,73 @@ completed.
 The first published experiment trained against a random opponent for 20,000
 episodes, alternating between X and O.
 
-| Evaluation opponent | Agent seat | Games | Wins | Draws | Losses |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Random | X | 200 | 198 | 2 | 0 |
-| Random | O | 200 | 161 | 26 | 13 |
-| Minimax | X | 200 | 0 | 200 | 0 |
-| Minimax | O | 200 | 0 | 200 | 0 |
+The latest completed offline assessment, on 15 October 2026, evaluated its
+final checkpoint over 12,000 games: 1,000 per opponent, seat, and evaluation
+seed. Results pooled across the three evaluation seeds are:
 
-Evaluation used greedy actions with epsilon set to zero.
+| Evaluation opponent | Agent seat | Games | Wins | Draws | Losses | Loss rate | 95% CI for loss rate |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Random | X | 3,000 | 2,900 | 67 | 33 | 1.10% | 0.78–1.54% |
+| Random | O | 3,000 | 2,584 | 289 | 127 | 4.23% | 3.57–5.01% |
+| Minimax | X | 3,000 | 0 | 3,000 | 0 | 0.00% | N/A |
+| Minimax | O | 3,000 | 0 | 3,000 | 0 | 0.00% | N/A |
 
-- Training seed: `42`; evaluation seed: `12345`.
+The two-sided 95% Wilson confidence intervals estimate sampling uncertainty
+against the random opponent for this fixed model, assuming independent games
+with a fixed loss probability. They do not estimate variation between training
+runs. Intervals are omitted for the deterministic minimax opponent; see the
+[uncertainty methodology](docs/offline-evaluation.md#loss-rate-uncertainty).
+
+Evaluation used greedy actions with epsilon set to zero, on CUDA.
+Base evaluation seeds were `12345`, `23456`, and `34567`; opponent/seat offsets
+are recorded in the [assessment manifest](docs/results/2026-10-15-offline/assessment.json).
+The [per-seed results](docs/results/2026-10-15-offline/evaluation.csv) retain all
+12 evaluation batches.
+
+- Training run: `20261005T185241722454Z_a1f0bcd3`; training seed: `42`.
+- Checkpoint: `episode-00020000_updates-00071783_session-001.pt`.
+- Checkpoint SHA-256: `b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b`.
+- Assessment: `2026-10-15_15-43-10_388270_UTC_8965ed0e`.
 - Network: two dense hidden layers of 64 units with ReLU activation.
 - Optimiser: Adam, with learning rate `0.001`.
-- Device: CUDA.
-- Training time: approximately 183 seconds.
-- Evaluation time: approximately 71 seconds.
-- Total elapsed time: approximately 294 seconds.
+- Original training-run device: CUDA.
+- Original training-run timings: approximately 183 seconds training,
+  71 seconds evaluation, and 294 seconds total elapsed time.
 
-These measurements describe one training seed and the evaluated games.
-They do not establish perfect play across every possible board position.
-The run recorded uncommitted code changes, so its recorded Git commit alone
-does not fully identify the implementation used.
+Reproduce this offline assessment with the explicit checkpoint:
+
+```sh
+docker compose run --rm --entrypoint python tictactoe -m evaluation.offline_eval --checkpoint training/tictactoe/runs/20261005T185241722454Z_a1f0bcd3/checkpoints/episode-00020000_updates-00071783_session-001.pt --opponents random minimax --seats x o --seeds 12345 23456 34567 --games 1000 --device cuda
+```
+
+These results describe three evaluation seeds for one trained model, rather
+than independent training runs. Minimax uses deterministic tie-breaking, so
+the repeated draws do not prove the model cannot lose against other move
+sequences. The original training run recorded uncommitted code changes, so
+its recorded Git commit alone does not fully identify the implementation used.
+
+The following chart shows the original evaluations during training, rather
+than the expanded offline assessment above.
 
 ![Evaluation progress](docs/results/2026-10-05-random/evaluation.png)
 
 Inspect the [experiment configuration](docs/results/2026-10-05-random/config.yaml),
-[evaluation history](docs/results/2026-10-05-random/evaluation.csv),
-and [complete plot snapshot](docs/results/2026-10-05-random/).
+[original evaluation results](docs/results/2026-10-05-random/README.md),
+[training evaluation history](docs/results/2026-10-05-random/evaluation.csv),
+and [complete training plot snapshot](docs/results/2026-10-05-random/).
+
+## Offline checkpoint evaluation
+
+Evaluate a saved model without resuming training:
+
+```sh
+poetry run python -m evaluation.offline_eval --checkpoint <checkpoint.pt> --seeds 12345 23456 34567 --games 1000
+```
+
+Games are requested per opponent, seat, and evaluation seed. Each assessment
+saves independent JSON/CSV summaries and per-game SQLite records. See the
+[offline evaluation guide](docs/offline-evaluation.md) for Docker usage,
+checkpoint selectors, and interruption behaviour.
 
 ## Play Tic-Tac-Toe
 

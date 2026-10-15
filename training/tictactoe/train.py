@@ -29,6 +29,7 @@ from evaluation.model_registry import (
     connect_registry,
     import_tictactoe_run,
 )
+from evaluation.tictactoe_matches import make_opponent
 from games.tictactoe.rules import PLAYER_O, PLAYER_X
 from models.tictactoe_q_network import TicTacToeQNetwork
 from training.checkpoints import (
@@ -45,7 +46,7 @@ from training.metrics import (
     write_json,
 )
 from training.tictactoe.environment import Observation, TicTacToeAdapter
-from training.tictactoe.evaluation import evaluate_agent, make_opponent
+from training.tictactoe.evaluation import evaluate_agent
 from training.training_plots import plot_training_metrics
 from training.utils import ReplayBuffer, Transition, linear_epsilon
 from utils.timestamps import utc_now
