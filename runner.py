@@ -22,11 +22,10 @@ from evaluation.model_registry import (
 from evaluation.recorder import ModelIdentity, RunRecorder
 from games.tictactoe.play import human_policy, play_game, random_policy
 from games.tictactoe.rules import EMPTY, PLAYER_O, PLAYER_X
-from players.checkpoint_selection import resolve_checkpoint
-from players.checkpoints import load_model_checkpoint
+from players.load_checkpoints import load_model_checkpoint, resolve_checkpoint
 from players.minimax import minimax_policy
 from players.saved_agent import SavedAgentPlayer
-from players.tictactoe import TicTacToePlayerAdapter, build_tictactoe_model
+from players.tictactoe_player import TicTacToePlayerAdapter, build_tictactoe_model
 
 logger = logging.getLogger(__name__)
 

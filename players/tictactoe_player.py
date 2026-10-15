@@ -1,4 +1,4 @@
-"""Tic-Tac-Toe encoding and construction for saved inference players."""
+"""Build and encode Tic-Tac-Toe saved-model players."""
 
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -6,8 +6,9 @@ from typing import Any
 import torch
 from torch import Tensor
 
+from games.tictactoe.encoding import encode_board
 from games.tictactoe.rules import TicTacToe
-from models.tictactoe import TicTacToeQNetwork
+from models.tictactoe_q_network import TicTacToeQNetwork
 
 
 class TicTacToePlayerAdapter:
@@ -15,7 +16,7 @@ class TicTacToePlayerAdapter:
 
     def encode(self, game: TicTacToe) -> Tensor:
         return torch.tensor(
-            [[cell * game.current_player for cell in game.board]], dtype=torch.float32
+            [encode_board(game.board, game.current_player)], dtype=torch.float32
         )
 
     def legal_actions(self, game: TicTacToe) -> Sequence[int]:

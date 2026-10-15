@@ -30,7 +30,7 @@ from evaluation.model_registry import (
     import_tictactoe_run,
 )
 from games.tictactoe.rules import PLAYER_O, PLAYER_X
-from models.tictactoe import TicTacToeQNetwork
+from models.tictactoe_q_network import TicTacToeQNetwork
 from training.checkpoints import (
     checkpoint_payload,
     load_checkpoint,
@@ -42,13 +42,13 @@ from training.dqn import DQNAgent
 from training.metrics import (
     MetricsRecorder,
     restore_metric_offsets,
-    utc_now,
     write_json,
 )
-from training.plots import plot_training_metrics
 from training.tictactoe.environment import Observation, TicTacToeAdapter
 from training.tictactoe.evaluation import evaluate_agent, make_opponent
+from training.training_plots import plot_training_metrics
 from training.utils import ReplayBuffer, Transition, linear_epsilon
+from utils.timestamps import utc_now
 
 logger = logging.getLogger(__name__)
 DEFAULT_RUNS_DIR = Path(__file__).resolve().parent / "runs"

@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from evaluation.database import PROJECT_ROOT
-from evaluation.plots import plot_results
+from evaluation.match_plots import plot_results
 
 
 def default_plot_path(run_id, started_at, game="tictactoe"):

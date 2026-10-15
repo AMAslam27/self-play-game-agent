@@ -9,6 +9,7 @@ from typing import Any, Protocol, TypeVar
 import torch
 from torch import nn
 
+from models.inference import resolve_device, select_greedy_q_action
 from training.utils import (
     Transition,
     _require_positive_integer,
@@ -60,9 +61,7 @@ class DQNAgent:
         _require_positive_integer(
             target_update_every_updates, "target_update_every_updates"
         )
-        if device == "auto":
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.device = torch.device(device)
+        self.device = resolve_device(device)
         self.online_network = network.to(self.device)
         self.target_network = deepcopy(self.online_network)
         self.target_network.requires_grad_(False)
@@ -97,8 +96,7 @@ class DQNAgent:
                 states = self._states([observation])
                 values = self.online_network(states)
                 self._validate_output(values, 1, len(observation.action_mask))
-                mask = self._masks([observation])
-                return int(values.masked_fill(~mask, -torch.inf).argmax(dim=1).item())
+                return select_greedy_q_action(values, legal)
         finally:
             self.online_network.train(was_training)
 

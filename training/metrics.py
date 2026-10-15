@@ -60,10 +60,6 @@ SCHEMAS = {
 }
 
 
-def utc_now() -> str:
-    return datetime.now(UTC).isoformat()
-
-
 def write_json(path: Path, value: Mapping[str, Any]) -> None:
     """Replace metadata atomically; leave the previous file intact on failure."""
     temporary = path.with_suffix(path.suffix + ".tmp")

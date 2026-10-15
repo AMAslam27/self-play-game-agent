@@ -11,6 +11,8 @@ from typing import Generic, Protocol, TypeVar
 import torch
 from torch import Tensor, nn
 
+from models.inference import resolve_device, select_greedy_q_action
+
 GameT = TypeVar("GameT")
 AdapterGameT = TypeVar("AdapterGameT", contravariant=True)
 ActionT = TypeVar("ActionT")
@@ -34,32 +36,6 @@ class GameAdapter(Protocol[AdapterGameT, AdapterActionT]):
         ...
 
 
-def select_greedy_q_action(output: Tensor, legal_actions: Sequence[int]) -> int:
-    """Choose the largest legal Q-value from a (1, actions) output tensor.
-
-    Ties choose the lowest output index. Only legal values must be finite;
-    illegal outputs are ignored rather than allowed to influence selection.
-    """
-    if output.ndim != 2 or output.shape[0] != 1 or not output.is_floating_point():
-        raise ValueError(
-            "Q-network output must be a floating tensor shaped (1, actions)"
-        )
-    if not legal_actions:
-        raise ValueError("Cannot select an action without legal moves")
-    if any(
-        isinstance(index, bool)
-        or not isinstance(index, int)
-        or not 0 <= index < output.shape[1]
-        for index in legal_actions
-    ):
-        raise ValueError("Legal actions must be valid Q-network output indices")
-    indices = torch.tensor(sorted(set(legal_actions)), device=output.device)
-    values = output[0, indices]
-    if not bool(torch.isfinite(values).all()):
-        raise ValueError("Legal Q-values must be finite")
-    return int(indices[values.argmax()].item())
-
-
 class SavedAgentPlayer(Generic[GameT, ActionT]):
     """Callable policy using a model, a game adapter, and an action selector.
 
@@ -76,9 +52,7 @@ class SavedAgentPlayer(Generic[GameT, ActionT]):
         action_selector: ActionSelector = select_greedy_q_action,
         device: str | torch.device = "auto",
     ) -> None:
-        if device == "auto":
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.device = torch.device(device)
+        self.device = resolve_device(device)
         self.model = model.to(self.device)
         self.model.eval()
         self.adapter = adapter
