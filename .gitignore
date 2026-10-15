@@ -112,6 +112,7 @@ temp/
 
 # Automatically generated run charts
 /results/*/plots/
+/results/*/evaluations/
 
 Add-Content -Path .gitignore -Value "`n# Published experiment figures`n!/docs/results/**/*.png"
 
