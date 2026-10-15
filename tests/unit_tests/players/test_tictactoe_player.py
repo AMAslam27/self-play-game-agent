@@ -2,7 +2,8 @@ import pytest
 import torch
 
 from games.tictactoe.rules import TicTacToe
-from players.tictactoe import TicTacToePlayerAdapter, build_tictactoe_model
+from players.tictactoe_player import TicTacToePlayerAdapter, build_tictactoe_model
+from training.tictactoe.environment import TicTacToeAdapter
 
 
 @pytest.mark.parametrize("player", [1, -1])
@@ -35,3 +36,20 @@ def test_builds_saved_architecture():
 def test_rejects_missing_network_configuration():
     with pytest.raises(ValueError, match="network configuration"):
         build_tictactoe_model({})
+
+
+@pytest.mark.parametrize("player", [1, -1])
+def test_training_and_saved_player_encodings_agree_after_moves(player):
+    first_legal = lambda game: game.legal_actions()[0]
+    environment = TicTacToeAdapter(first_legal, agent_player=player)
+    observation = environment.reset()
+    game = TicTacToe()
+    if player == -1:
+        game.step(0)
+    adapter = TicTacToePlayerAdapter()
+    assert adapter.encode(game).tolist() == [list(observation.board)]
+
+    observation, _, _ = environment.step(4)
+    game.step(4)
+    game.step(first_legal(game))
+    assert adapter.encode(game).tolist() == [list(observation.board)]

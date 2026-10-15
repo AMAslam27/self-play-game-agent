@@ -10,11 +10,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from torch import Tensor
-    from torch.optim import Optimizer
-    from torch.optim.lr_scheduler import LRScheduler
+    import torch
 
 ObservationT = TypeVar("ObservationT")
+
+_OPTIMIZER_CLASSES = {"adam": "Adam", "adamw": "AdamW", "sgd": "SGD"}
+_SCHEDULER_CLASSES = {"step": "StepLR", "exponential": "ExponentialLR"}
 
 
 @dataclass(frozen=True)
@@ -138,16 +139,14 @@ def _require_finite_number(value: float, name: str, *, allow_zero: bool) -> None
         raise ValueError(f"{name} must be finite and {constraint}")
 
 
-def build_optimizer(
-    parameters: Iterable[Tensor], config: Mapping[str, Any] | None = None
-) -> Optimizer:
-    """Build Adam, AdamW, or SGD from an optimizer config mapping.
+def resolve_optimizer_config(
+    config: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate optimizer settings and return defaults without changing input.
 
-    Keys are name, learning_rate, weight_decay, and optional options for
-    optimizer-specific arguments (e.g. momentum for SGD). Defaults preserve
-    Adam with lr=0.001 and weight_decay=0.0. The config is never modified.
-    PyTorch is imported only when optimization helpers are used, so replay
-    storage remains usable without loading PyTorch.
+    PyTorch-specific option names and values are checked during construction.
+    This resolver can also be used by configuration loading without importing
+    PyTorch or constructing an optimizer.
     """
     values = _config_values(
         config, {"name", "learning_rate", "weight_decay", "options"}
@@ -159,33 +158,24 @@ def build_optimizer(
     options = _config_options(values)
     if set(options) & {"params", "lr", "weight_decay"}:
         raise ValueError("Set learning_rate and weight_decay outside optimizer options")
-
-    from torch import optim
-
-    factories: dict[str, Callable[..., Optimizer]] = {
-        "adam": optim.Adam,
-        "adamw": optim.AdamW,
-        "sgd": optim.SGD,
-    }
     name = values.get("name", "adam")
-    if not isinstance(name, str) or name not in factories:
+    if not isinstance(name, str) or name not in _OPTIMIZER_CLASSES:
         raise ValueError(f"Unsupported optimizer: {name!r}")
-    try:
-        return factories[name](
-            parameters, lr=learning_rate, weight_decay=weight_decay, **options
-        )
-    except TypeError as error:
-        raise ValueError(f"Invalid options for optimizer {name!r}: {error}") from error
+    return {
+        "name": name,
+        "learning_rate": learning_rate,
+        "weight_decay": weight_decay,
+        "options": options,
+    }
 
 
-def build_lr_scheduler(
-    optimizer: Optimizer, config: Mapping[str, Any] | None = None
-) -> LRScheduler | None:
-    """Build a per-optimizer-update scheduler: none, step, or exponential.
+def resolve_lr_scheduler_config(
+    config: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate scheduler settings and return defaults without changing input.
 
-    Config contains name and options. Step uses step_size (positive integer)
-    and gamma (positive multiplier, default 0.1). Exponential requires gamma.
-    Call scheduler.step() after optimizer.step(), never during evaluation.
+    Step schedulers default gamma to 0.1; exponential schedulers require it.
+    PyTorch-specific options are checked when constructing the scheduler.
     """
     values = _config_values(config, {"name", "options"})
     options = _config_options(values)
@@ -193,15 +183,8 @@ def build_lr_scheduler(
     if name == "none":
         if options:
             raise ValueError("Scheduler 'none' does not accept options")
-        return None
-
-    from torch.optim import lr_scheduler
-
-    factories: dict[str, Callable[..., LRScheduler]] = {
-        "step": lr_scheduler.StepLR,
-        "exponential": lr_scheduler.ExponentialLR,
-    }
-    if not isinstance(name, str) or name not in factories:
+        return {"name": name, "options": options}
+    if not isinstance(name, str) or name not in _SCHEDULER_CLASSES:
         raise ValueError(f"Unsupported LR scheduler: {name!r}")
     if "optimizer" in options:
         raise ValueError("Scheduler optimizer is supplied by the agent")
@@ -211,7 +194,53 @@ def build_lr_scheduler(
     if "gamma" not in options:
         raise ValueError("Scheduler requires gamma")
     _require_finite_number(options["gamma"], "gamma", allow_zero=False)
+    return {"name": name, "options": options}
+
+
+def build_optimizer(
+    parameters: Iterable[torch.Tensor], config: Mapping[str, Any] | None = None
+) -> torch.optim.Optimizer:
+    """Build Adam, AdamW, or SGD from shared validated settings.
+
+    PyTorch is imported only when constructing an optimizer, so configuration
+    resolution and replay storage remain usable without loading PyTorch.
+    """
+    values = resolve_optimizer_config(config)
+    from torch import optim
+
+    name = values["name"]
+    factory: Callable[..., torch.optim.Optimizer] = getattr(
+        optim, _OPTIMIZER_CLASSES[name]
+    )
     try:
-        return factories[name](optimizer, **options)
+        return factory(
+            parameters,
+            lr=values["learning_rate"],
+            weight_decay=values["weight_decay"],
+            **values["options"],
+        )
+    except TypeError as error:
+        raise ValueError(f"Invalid options for optimizer {name!r}: {error}") from error
+
+
+def build_lr_scheduler(
+    optimizer: torch.optim.Optimizer, config: Mapping[str, Any] | None = None
+) -> torch.optim.lr_scheduler.LRScheduler | None:
+    """Build a per-update scheduler from shared validated settings.
+
+    Call scheduler.step() after optimizer.step(), never during evaluation.
+    Disabled scheduling returns None without importing PyTorch.
+    """
+    values = resolve_lr_scheduler_config(config)
+    name = values["name"]
+    if name == "none":
+        return None
+    from torch.optim import lr_scheduler
+
+    factory: Callable[..., torch.optim.lr_scheduler.LRScheduler] = getattr(
+        lr_scheduler, _SCHEDULER_CLASSES[name]
+    )
+    try:
+        return factory(optimizer, **values["options"])
     except TypeError as error:
         raise ValueError(f"Invalid options for scheduler {name!r}: {error}") from error

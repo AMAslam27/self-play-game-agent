@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 EMPTY = 0
 PLAYER_X = 1
 PLAYER_O = -1
@@ -12,6 +14,14 @@ WIN_LINES = (
     (0, 4, 8),
     (2, 4, 6),  # diagonals
 )
+
+
+def winner(board: Sequence[int]) -> int:
+    """Return the winning player, or EMPTY when no line is complete."""
+    for a, b, c in WIN_LINES:
+        if board[a] != EMPTY and board[a] == board[b] == board[c]:
+            return board[a]
+    return EMPTY
 
 
 class TicTacToe:
@@ -56,13 +66,7 @@ class TicTacToe:
 
     def winner(self):
         """Return PLAYER_X, PLAYER_O, or EMPTY (0) if there is no winner."""
-        for a, b, c in WIN_LINES:
-            if (
-                self.board[a] != EMPTY
-                and self.board[a] == self.board[b] == self.board[c]
-            ):
-                return self.board[a]
-        return EMPTY
+        return winner(self.board)
 
     def render(self):
         symbols = {PLAYER_X: "X", PLAYER_O: "O", EMPTY: "."}

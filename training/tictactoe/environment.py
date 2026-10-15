@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from games.tictactoe.encoding import encode_board
 from games.tictactoe.play import random_policy
 from games.tictactoe.rules import EMPTY, PLAYER_O, PLAYER_X, TicTacToe
 
@@ -87,7 +88,7 @@ class TicTacToeAdapter:
 
     def _observation(self) -> Observation:
         return Observation(
-            board=tuple(cell * self.agent_player for cell in self._game.board),
+            board=encode_board(self._game.board, self.agent_player),
             action_mask=tuple(
                 not self._done and cell == EMPTY for cell in self._game.board
             ),

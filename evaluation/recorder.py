@@ -1,7 +1,8 @@
 """Record one batch of games with a transaction per completed game."""
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+
+from utils.timestamps import utc_now
 
 
 @dataclass(frozen=True)
@@ -14,10 +15,6 @@ class ModelIdentity:
     checkpoint_hash: str
     selection: str
     protocol_id: str | None = None
-
-
-def utc_timestamp():
-    return datetime.now(UTC).isoformat()
 
 
 class RunRecorder:
@@ -42,7 +39,7 @@ class RunRecorder:
         if requested_games <= 0:
             raise ValueError("Requested games must be positive")
 
-        started_at = utc_timestamp()
+        started_at = utc_now()
         with self.connection:
             cursor = self.connection.execute(
                 """
@@ -99,7 +96,7 @@ class RunRecorder:
                 """
                 UPDATE runs SET finished_at = ?, status = ? WHERE id = ?
                 """,
-                (utc_timestamp(), status, self.run_id),
+                (utc_now(), status, self.run_id),
             )
         self.finished = True
 

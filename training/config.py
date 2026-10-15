@@ -7,7 +7,12 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-from training.utils import _require_finite_number, _require_positive_integer
+from training.utils import (
+    _require_finite_number,
+    _require_positive_integer,
+    resolve_lr_scheduler_config,
+    resolve_optimizer_config,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -27,13 +32,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
     },
     "training": {
         "episodes": 20000,
-        "optimizer": {
-            "name": "adam",
-            "learning_rate": 0.001,
-            "weight_decay": 0.0,
-            "options": {},
-        },
-        "lr_scheduler": {"name": "none", "options": {}},
+        "optimizer": resolve_optimizer_config(),
+        "lr_scheduler": resolve_lr_scheduler_config(),
         "loss": "smooth_l1",
         "discount_factor": 0.99,
         "batch_size": 64,
@@ -98,26 +98,54 @@ def resolve_config(
         config["training"]["episodes"] = episodes
     if device is not None:
         config["experiment"]["device"] = device
-    if (
-        isinstance(config["schema_version"], bool)
-        or not isinstance(config["schema_version"], int)
-        or config["schema_version"] != 1
-    ):
+
+    _validate_schema_version(config["schema_version"])
+    _validate_experiment(config["experiment"])
+    _validate_environment(config["environment"])
+    _validate_training(config["training"])
+    _validate_network(config["network"])
+    _validate_exploration(config["exploration"])
+    _validate_evaluation(config["evaluation"])
+    _validate_artifacts(config["artifacts"])
+
+    config["artifacts"]["output_root"] = _resolve_output_root(
+        config["artifacts"]["output_root"], default_output_root
+    )
+    return config
+
+
+def _validate_schema_version(version: Any) -> None:
+    if isinstance(version, bool) or not isinstance(version, int) or version != 1:
         raise ValueError("Unsupported configuration schema_version")
-    experiment = config["experiment"]
+
+
+def _validate_seed(seed: Any) -> None:
+    if isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed < 2**32:
+        raise ValueError("Seeds must be integers in [0, 2**32)")
+
+
+def _require_boolean(value: Any) -> None:
+    if not isinstance(value, bool):
+        raise ValueError("Boolean configuration settings must be true or false")
+
+
+def _validate_experiment(experiment: Mapping[str, Any]) -> None:
     if not isinstance(experiment["name"], str) or not experiment["name"].strip():
         raise ValueError("experiment.name must be a nonempty string")
-    for seed in (experiment["seed"], config["evaluation"]["seed"]):
-        if isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed < 2**32:
-            raise ValueError("Seeds must be integers in [0, 2**32)")
+    _validate_seed(experiment["seed"])
     if experiment["device"] not in ("auto", "cpu", "cuda"):
         raise ValueError("Device must be auto, cpu, or cuda")
-    if config["environment"]["opponent"] not in ("random", "minimax"):
+    _require_boolean(experiment["deterministic"])
+
+
+def _validate_environment(environment: Mapping[str, Any]) -> None:
+    if environment["opponent"] not in ("random", "minimax"):
         raise ValueError("Opponent must be random or minimax")
-    if config["environment"]["agent_seat"] not in ("alternate", "x", "o"):
+    if environment["agent_seat"] not in ("alternate", "x", "o"):
         raise ValueError("Agent seat must be alternate, x, or o")
 
-    training = config["training"]
+
+def _validate_training(training: dict[str, Any]) -> None:
     for key in (
         "episodes",
         "batch_size",
@@ -138,30 +166,11 @@ def resolve_config(
         or not 0 <= training["discount_factor"] <= 1
     ):
         raise ValueError("discount_factor must be in [0, 1]")
-    optimizer = training["optimizer"]
-    if optimizer["name"] not in ("adam", "adamw", "sgd"):
-        raise ValueError("Unsupported optimizer")
-    _require_finite_number(
-        optimizer["learning_rate"], "learning_rate", allow_zero=False
-    )
-    _require_finite_number(optimizer["weight_decay"], "weight_decay", allow_zero=True)
-    scheduler = training["lr_scheduler"]
-    if scheduler["name"] not in ("none", "step", "exponential"):
-        raise ValueError("Unsupported LR scheduler")
-    for section in (optimizer, scheduler):
-        if not isinstance(section["options"], Mapping):
-            raise ValueError("Optimizer and scheduler options must be mappings")
-    if scheduler["name"] == "none" and scheduler["options"]:
-        raise ValueError("Disabled LR scheduler must have empty options")
-    if scheduler["name"] == "step":
-        _require_positive_integer(scheduler["options"].get("step_size", 0), "step_size")
-        scheduler["options"].setdefault("gamma", 0.1)
-    if scheduler["name"] != "none":
-        _require_finite_number(
-            scheduler["options"].get("gamma"), "gamma", allow_zero=False
-        )
+    training["optimizer"] = resolve_optimizer_config(training["optimizer"])
+    training["lr_scheduler"] = resolve_lr_scheduler_config(training["lr_scheduler"])
 
-    network = config["network"]
+
+def _validate_network(network: Mapping[str, Any]) -> None:
     for key in ("hidden_sizes", "block_types", "activations"):
         if not isinstance(network[key], list) or not network[key]:
             raise ValueError(f"network.{key} must be a nonempty list")
@@ -186,7 +195,8 @@ def resolve_config(
     if not isinstance(probability, (int, float)) or not 0 <= probability < 1:
         raise ValueError("dropout_probability must be in [0, 1)")
 
-    exploration = config["exploration"]
+
+def _validate_exploration(exploration: Mapping[str, Any]) -> None:
     if exploration["schedule"] != "linear":
         raise ValueError("Only linear epsilon decay is currently supported")
     for key in ("initial_epsilon", "final_epsilon"):
@@ -194,7 +204,10 @@ def resolve_config(
     if not 0 <= exploration["final_epsilon"] <= exploration["initial_epsilon"] <= 1:
         raise ValueError("Epsilon must satisfy 0 <= final <= initial <= 1")
     _require_positive_integer(exploration["decay_steps"], "decay_steps")
-    evaluation = config["evaluation"]
+
+
+def _validate_evaluation(evaluation: Mapping[str, Any]) -> None:
+    _validate_seed(evaluation["seed"])
     for key in ("every_episodes", "games_per_opponent_per_seat"):
         _require_positive_integer(evaluation[key], f"evaluation.{key}")
     for key, allowed in (("opponents", ("random", "minimax")), ("seats", ("x", "o"))):
@@ -209,7 +222,9 @@ def resolve_config(
             raise ValueError(f"Duplicate evaluation.{key}")
     if evaluation["epsilon"] != 0.0:
         raise ValueError("Evaluation epsilon must be zero")
-    artifacts = config["artifacts"]
+
+
+def _validate_artifacts(artifacts: Mapping[str, Any]) -> None:
     for key in (
         "checkpoint_every_episodes",
         "metrics_every_episodes",
@@ -217,21 +232,21 @@ def resolve_config(
     ):
         _require_positive_integer(artifacts[key], f"artifacts.{key}")
     for value in (
-        experiment["deterministic"],
         artifacts["save_resolved_config"],
         artifacts["save_code_version"],
         artifacts["save_final_checkpoint"],
     ):
-        if not isinstance(value, bool):
-            raise ValueError("Boolean configuration settings must be true or false")
+        _require_boolean(value)
     output_root = artifacts["output_root"]
     if output_root is not None and (
         not isinstance(output_root, str) or not output_root.strip()
     ):
         raise ValueError("output_root must be a nonempty path")
+
+
+def _resolve_output_root(output_root: str | None, default_output_root: Path) -> str:
     path = Path(output_root) if output_root is not None else default_output_root
-    artifacts["output_root"] = str((PROJECT_ROOT / path).resolve())
-    return config
+    return str((PROJECT_ROOT / path).resolve())
 
 
 def load_config(

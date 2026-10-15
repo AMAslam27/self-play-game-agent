@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 import yaml
 
-from models.tictactoe import TicTacToeQNetwork
+from models.tictactoe_q_network import TicTacToeQNetwork
 from training.dqn import DQNAgent
 from training.utils import build_lr_scheduler, build_optimizer
 

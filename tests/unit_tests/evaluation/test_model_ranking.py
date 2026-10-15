@@ -8,7 +8,7 @@ from evaluation.model_registry import (
     checkpoint_hash, connect_registry, import_tictactoe_run, protocol_identity,
 )
 from evaluation.tictactoe_ranking import rank_checkpoints
-from players.checkpoint_selection import resolve_checkpoint
+from players.load_checkpoints import resolve_checkpoint
 from training.checkpoints import CHECKPOINT_VERSION
 
 

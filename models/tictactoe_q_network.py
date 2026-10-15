@@ -1,4 +1,4 @@
-"""Tic-Tac-Toe Q-network built from reusable hidden blocks."""
+"""Configurable Tic-Tac-Toe Q-network built from reusable hidden blocks."""
 
 from collections.abc import Sequence
 

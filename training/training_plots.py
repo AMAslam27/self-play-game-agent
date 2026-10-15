@@ -1,4 +1,4 @@
-"""Regenerate training figures from raw CSVs without rerunning training."""
+"""Plot training metrics from raw CSVs without rerunning training."""
 
 from __future__ import annotations
 

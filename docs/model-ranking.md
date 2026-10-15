@@ -49,7 +49,7 @@ Exhaustive assessment will require a new ranking policy and protocol.
 
 ## Selection API
 
-`players.checkpoint_selection.resolve_checkpoint` accepts:
+`players.load_checkpoints.resolve_checkpoint` accepts:
 
 - An explicit checkpoint path, including intermediate checkpoints. No registry
   is needed; the loader subsequently validates the checkpoint format.

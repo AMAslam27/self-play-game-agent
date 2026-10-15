@@ -2,7 +2,7 @@ import pytest
 import torch
 from torch import nn
 
-from players.saved_agent import SavedAgentPlayer, select_greedy_q_action
+from players.saved_agent import SavedAgentPlayer
 
 
 class Adapter:
@@ -65,23 +65,3 @@ def test_player_rejects_illegal_custom_selection():
     game = {"features": [100.0, 2.0, 3.0], "legal": [1, 2], "actions": ["a", "b", "c"]}
     with pytest.raises(ValueError, match="legal output index"):
         player(game)
-
-
-def test_greedy_selection_ignores_illegal_values_and_breaks_ties_by_index():
-    output = torch.tensor([[float("nan"), -2.0, -2.0]])
-    assert select_greedy_q_action(output, [2, 1]) == 1
-
-
-@pytest.mark.parametrize("output,legal", [
-    (torch.ones(3), [0]),
-    (torch.ones(2, 3), [0]),
-    (torch.ones(1, 3, dtype=torch.int64), [0]),
-    (torch.ones(1, 3), []),
-    (torch.ones(1, 3), [-1]),
-    (torch.ones(1, 3), [3]),
-    (torch.ones(1, 3), [True]),
-    (torch.tensor([[float("inf"), 1.0]]), [0]),
-])
-def test_greedy_selection_rejects_invalid_output_or_actions(output, legal):
-    with pytest.raises(ValueError):
-        select_greedy_q_action(output, legal)

@@ -1,4 +1,4 @@
-"""Plot aggregate match results independently of the game runner."""
+"""Create aggregate match charts independently of the game runner."""
 
 from pathlib import Path
 

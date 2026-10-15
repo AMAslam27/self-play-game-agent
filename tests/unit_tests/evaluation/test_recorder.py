@@ -5,7 +5,7 @@ from evaluation import recorder
 
 @pytest.fixture
 def run_recorder(monkeypatch, fake_connection):
-    monkeypatch.setattr(recorder, "utc_timestamp", lambda: "2026-10-01T12:00:00+00:00")
+    monkeypatch.setattr(recorder, "utc_now", lambda: "2026-10-01T12:00:00+00:00")
     return recorder.RunRecorder(fake_connection)
 
 

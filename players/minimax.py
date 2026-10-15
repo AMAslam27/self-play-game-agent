@@ -1,11 +1,4 @@
-from games.tictactoe.rules import EMPTY, WIN_LINES
-
-
-def winner(board):
-    for a, b, c in WIN_LINES:
-        if board[a] != EMPTY and board[a] == board[b] == board[c]:
-            return board[a]
-    return EMPTY
+from games.tictactoe.rules import EMPTY, winner
 
 
 def score_position(board, turn, bot):
