@@ -70,6 +70,7 @@ def checkpoint_payload(
     opponent_rng: random.Random,
     progress: Mapping[str, Any],
     metric_offsets: Mapping[str, int],
+    training_opponents: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Encode observations as primitive values for weights_only loading."""
     replay_state = replay.state_dict()
@@ -99,6 +100,9 @@ def checkpoint_payload(
         "rng": capture_rng_state(),
         "progress": dict(progress),
         "metric_offsets": dict(metric_offsets),
+        "training_opponents": (
+            dict(training_opponents) if training_opponents is not None else None
+        ),
     }
 
 

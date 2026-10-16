@@ -4,12 +4,12 @@ schema_version: 1
 
 experiment:
   name: tictactoe-dqn-random
-  seed: 42 # Seed Python, NumPy, and PyTorch when the trainer is implemented.
+  seed: 42 # Seed Python, NumPy, and PyTorch.
   device: auto # auto, cpu, or cuda; record the actual device in run metadata.
   deterministic: true # Reproduce training on the same software/device setup.
 
 environment:
-  opponent: random # random or minimax; passed into TicTacToeAdapter.
+  opponent: random # random, minimax, model, or pool; see the other example configs.
   agent_seat: alternate # alternate X/O each episode; also allow x or o.
   # Board encoding and rewards are fixed by the adapter, not configurable:
   # own=+1, opponent=-1, empty=0; win=+1, loss=-1, draw/ongoing=0.

@@ -59,6 +59,15 @@ SCHEMAS = {
     ],
 }
 
+OPPONENT_FIELDS = ["session", "episode", "category", "opponent_id"]
+
+
+def _active_schemas(*, include_opponents: bool) -> dict[str, list[str]]:
+    schemas = dict(SCHEMAS)
+    if include_opponents:
+        schemas["opponents"] = OPPONENT_FIELDS
+    return schemas
+
 
 def write_json(path: Path, value: Mapping[str, Any]) -> None:
     """Replace metadata atomically; leave the previous file intact on failure."""
@@ -75,25 +84,37 @@ def read_metrics(run_dir: Path, table: str) -> list[dict[str, str]]:
         return list(csv.DictReader(stream))
 
 
-def restore_metric_offsets(run_dir: Path, offsets: Mapping[str, int]) -> None:
+def restore_metric_offsets(
+    run_dir: Path,
+    offsets: Mapping[str, int],
+    *,
+    include_opponents: bool = False,
+) -> None:
     """Archive trailing history before truncating to the saved checkpoint.
 
     This prevents duplicate counters when resuming an older checkpoint or
     recovering from a crash after metrics were flushed but before saving.
     """
-    if set(offsets) != set(SCHEMAS):
-        raise ValueError("Checkpoint metric offsets do not match the CSV schemas")
-    changed = []
-    for table, offset in offsets.items():
+    schemas = _active_schemas(include_opponents=include_opponents)
+    if set(offsets) != set(schemas):
+        raise ValueError(
+            "Checkpoint metric offsets do not match the active CSV schemas"
+        )
+    changed: list[tuple[Path, int]] = []
+    for table, fields in schemas.items():
+        offset = offsets[table]
         path = run_dir / f"{table}.csv"
         if (
             isinstance(offset, bool)
             or not isinstance(offset, int)
             or offset < 0
-            or not path.exists()
+            or not path.is_file()
             or path.stat().st_size < offset
         ):
             raise ValueError(f"Metrics cannot be restored to checkpoint: {table}")
+        with path.open(encoding="utf-8", newline="") as stream:
+            if next(csv.reader(stream), None) != fields:
+                raise ValueError(f"Unexpected CSV schema: {table}")
         if path.stat().st_size > offset:
             changed.append((path, offset))
     if not changed:
@@ -111,18 +132,23 @@ def restore_metric_offsets(run_dir: Path, offsets: Mapping[str, int]) -> None:
 class MetricsRecorder:
     """Raw CSV writer; the coordinator commits records after complete episodes."""
 
-    def __init__(self, run_dir: Path):
+    def __init__(self, run_dir: Path, *, include_opponents: bool = False):
         self.run_dir = run_dir
+        self._schemas = _active_schemas(include_opponents=include_opponents)
         self._files: dict[str, TextIO] = {}
         self._writers: dict[str, csv.DictWriter[str]] = {}
         try:
-            for table, fields in SCHEMAS.items():
+            # Validate all existing headers before opening any file for writing.
+            for table, fields in self._schemas.items():
                 path = run_dir / f"{table}.csv"
                 existing = path.exists() and path.stat().st_size > 0
                 if existing:
                     with path.open(encoding="utf-8", newline="") as check:
                         if next(csv.reader(check), None) != fields:
                             raise ValueError(f"Unexpected CSV schema: {table}")
+            for table, fields in self._schemas.items():
+                path = run_dir / f"{table}.csv"
+                existing = path.exists() and path.stat().st_size > 0
                 stream = path.open("a", encoding="utf-8", newline="")
                 self._files[table] = stream
                 writer = csv.DictWriter(stream, fieldnames=fields)
@@ -134,6 +160,8 @@ class MetricsRecorder:
             raise
 
     def write(self, table: str, row: Mapping[str, Any]) -> None:
+        if table not in self._writers:
+            raise ValueError(f"Metrics table is not enabled: {table}")
         self._writers[table].writerow(row)
 
     def flush(self) -> None:
@@ -143,7 +171,8 @@ class MetricsRecorder:
     def offsets(self) -> dict[str, int]:
         self.flush()
         return {
-            table: (self.run_dir / f"{table}.csv").stat().st_size for table in SCHEMAS
+            table: (self.run_dir / f"{table}.csv").stat().st_size
+            for table in self._schemas
         }
 
     def close(self) -> None:

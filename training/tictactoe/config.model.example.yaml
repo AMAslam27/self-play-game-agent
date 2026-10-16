@@ -1,0 +1,12 @@
+# Train a new learner against one frozen, previously trained model.
+# Replace the checkpoint path before running this configuration.
+schema_version: 1
+experiment:
+  name: tictactoe-dqn-model
+  seed: 42
+  device: auto
+environment:
+  opponent: model
+  agent_seat: alternate
+opponent_model:
+  checkpoint: training/tictactoe/runs/<run-id>/checkpoints/latest.pt
