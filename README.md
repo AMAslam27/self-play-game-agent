@@ -7,7 +7,8 @@ starting with Tic-Tac-Toe.
 
 The current implementation includes a configurable Deep Q-Network (DQN),
 training against random or minimax opponents, evaluation, resumable checkpoints,
-and experiment reporting. Self-play and additional games are planned.
+experiment reporting, and training against frozen models or a self-play pool.
+Additional games are planned.
 
 ## Features
 
@@ -17,6 +18,7 @@ and experiment reporting. Self-play and additional games are planned.
 - YAML configuration for network architecture and training hyperparameters.
 - Configurable optimisers, weight decay, and learning-rate schedulers.
 - Evaluation against random and minimax opponents from both player positions.
+- Fixed saved-model opponents and weighted self-play pools of frozen models.
 - Training curves, exploration and learning-rate plots, and timing metrics.
 - Saved configurations, checkpoints, and run metadata.
 
@@ -74,6 +76,52 @@ poetry run python -m training.tictactoe.train \
 
 `--episodes` specifies the total episode target, including episodes already
 completed.
+
+## Model opponents and self-play
+
+`environment.opponent` accepts `random`, `minimax`, `model`, or `pool`.
+`model` trains a new learner against one frozen checkpoint. Copy
+[the model-opponent example](training/tictactoe/config.model.example.yaml) and
+replace `opponent_model.checkpoint` with an existing checkpoint path. The
+opponent does not initialize the learner; `--resume` restores the learner's
+existing training session instead.
+
+Run snapshot-pool self-play with:
+
+```sh
+poetry run python -m training.tictactoe.train --config training/tictactoe/config.pool.example.yaml
+```
+
+The pool chooses an opponent once per episode using configurable category
+weights: `random`, `minimax`, `latest`, and `historical`. `latest` is the most
+recent frozen snapshot of this run's learner. `historical` chooses uniformly
+from imported `initial_checkpoints` and older snapshots. Model counts do not
+change category probabilities. With the default alternating seat setting, the
+learner plays both X and O.
+
+An initial learner snapshot is created before training. Further snapshots are
+created after every `snapshot_every_episodes` completed episodes. The
+`max_snapshots` limit includes the initial snapshot, which is retained alongside
+the most recent versions; it must be at least two. Imported models are retained
+separately and do not count toward this limit. An unavailable historical category
+is excluded and the remaining weights are renormalized. A historical-only pool
+requires at least one initial checkpoint. Model opponents play greedy legal
+moves, with no exploration or learning.
+
+Checkpoint paths are relative to the project root, or may be absolute. Models
+load once; new model/pool checkpoints embed all retained opponents and their
+selection RNG state. Resume uses these embedded models, even if the source
+checkpoint files have moved. Larger pools therefore produce larger checkpoints.
+Existing random/minimax checkpoints remain resumable.
+
+Model and pool runs additionally write `opponents.csv`, containing the selected
+category and opponent ID per episode. Join it to `episodes.csv` using `session`
+and `episode`; IDs map to model weights and source metadata in the run's training
+checkpoints. Recovery archives and truncates both CSVs to the saved boundary.
+Evaluation continues against fixed random/minimax baselines independently of
+the training pool. Compare baseline and self-play across independent training
+seeds before claiming improvement; a changing pool's training returns alone
+do not establish it.
 
 ## Current results
 
@@ -212,5 +260,5 @@ poetry run pytest
 ## Planned work
 
 - Evaluate training stability across multiple seeds.
-- Add self-play training.
+- Evaluate self-play against fixed historical reference models.
 - Extend the environment and training framework to additional games.

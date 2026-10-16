@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
@@ -24,6 +25,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "deterministic": True,
     },
     "environment": {"opponent": "random", "agent_seat": "alternate"},
+    "opponent_model": {"checkpoint": None},
+    "opponent_pool": {
+        "weights": {"random": 0.2, "minimax": 0.2, "latest": 0.3, "historical": 0.3},
+        "initial_checkpoints": [],
+        "snapshot_every_episodes": 1000,
+        "max_snapshots": 8,
+    },
     "network": {
         "hidden_sizes": [64, 64],
         "block_types": ["dense", "dense"],
@@ -102,6 +110,7 @@ def resolve_config(
     _validate_schema_version(config["schema_version"])
     _validate_experiment(config["experiment"])
     _validate_environment(config["environment"])
+    _validate_opponent_settings(config)
     _validate_training(config["training"])
     _validate_network(config["network"])
     _validate_exploration(config["exploration"])
@@ -139,10 +148,48 @@ def _validate_experiment(experiment: Mapping[str, Any]) -> None:
 
 
 def _validate_environment(environment: Mapping[str, Any]) -> None:
-    if environment["opponent"] not in ("random", "minimax"):
-        raise ValueError("Opponent must be random or minimax")
+    if environment["opponent"] not in ("random", "minimax", "model", "pool"):
+        raise ValueError("Opponent must be random, minimax, model, or pool")
     if environment["agent_seat"] not in ("alternate", "x", "o"):
         raise ValueError("Agent seat must be alternate, x, or o")
+
+
+def _validate_opponent_settings(config: Mapping[str, Any]) -> None:
+    checkpoint = config["opponent_model"]["checkpoint"]
+    if checkpoint is not None and (
+        not isinstance(checkpoint, str) or not checkpoint.strip()
+    ):
+        raise ValueError("opponent_model.checkpoint must be a nonempty path")
+    if config["environment"]["opponent"] == "model" and checkpoint is None:
+        raise ValueError("Model opponents require opponent_model.checkpoint")
+
+    pool = config["opponent_pool"]
+    for category, weight in pool["weights"].items():
+        _require_finite_number(
+            weight, f"opponent_pool.weights.{category}", allow_zero=True
+        )
+    total = sum(pool["weights"].values())
+    if not math.isfinite(total) or total <= 0:
+        raise ValueError("Opponent-pool weights must have a positive finite sum")
+    paths = pool["initial_checkpoints"]
+    if not isinstance(paths, list) or any(
+        not isinstance(path, str) or not path.strip() for path in paths
+    ):
+        raise ValueError("initial_checkpoints must be a list of nonempty paths")
+    _require_positive_integer(
+        pool["snapshot_every_episodes"], "opponent_pool.snapshot_every_episodes"
+    )
+    _require_positive_integer(pool["max_snapshots"], "opponent_pool.max_snapshots")
+    if pool["max_snapshots"] < 2:
+        raise ValueError("max_snapshots must be at least 2")
+    if (
+        config["environment"]["opponent"] == "pool"
+        and not paths
+        and not any(
+            pool["weights"][name] > 0 for name in ("random", "minimax", "latest")
+        )
+    ):
+        raise ValueError("Historical-only pools require initial_checkpoints")
 
 
 def _validate_training(training: dict[str, Any]) -> None:

@@ -8,6 +8,33 @@ from training.utils import resolve_lr_scheduler_config, resolve_optimizer_config
 
 
 class TestTrainingConfig(unittest.TestCase):
+    def test_model_and_pool_settings_are_resolved_without_requiring_files(self):
+        config = resolve_config({"environment": {"opponent": "model"},
+                                 "opponent_model": {"checkpoint": "saved/model.pt"}}, Path("runs"))
+        self.assertEqual(config["opponent_model"]["checkpoint"], "saved/model.pt")
+        pool = resolve_config({"environment": {"opponent": "pool"}}, Path("runs"))
+        self.assertEqual(pool["opponent_pool"]["max_snapshots"], 8)
+
+    def test_invalid_opponent_settings_are_rejected(self):
+        cases = [
+            {"environment": {"opponent": "model"}},
+            {"opponent_model": {"checkpoint": " "}},
+            {"opponent_pool": {"weights": {"latest": -1}}},
+            {"opponent_pool": {"weights": {"latest": float("nan")}}},
+            {"opponent_pool": {"weights": {"latest": True}}},
+            {"opponent_pool": {"weights": dict.fromkeys(["random", "minimax", "latest", "historical"], 0)}},
+            {"opponent_pool": {"weights": {"unknown": 1}}},
+            {"opponent_pool": {"initial_checkpoints": "model.pt"}},
+            {"opponent_pool": {"initial_checkpoints": [""]}},
+            {"opponent_pool": {"snapshot_every_episodes": 0}},
+            {"opponent_pool": {"max_snapshots": 1}},
+            {"environment": {"opponent": "pool"}, "opponent_pool": {"weights": {
+                "random": 0, "minimax": 0, "latest": 0, "historical": 1}}},
+        ]
+        for supplied in cases:
+            with self.subTest(supplied=supplied), self.assertRaises(ValueError):
+                resolve_config(supplied, Path("runs"))
+
     def test_defaults_and_overrides_are_resolved_without_mutation(self):
         original = {"training": {"optimizer": {"name": "sgd", "options": {"momentum": 0.9}}}}
         supplied = copy.deepcopy(original)

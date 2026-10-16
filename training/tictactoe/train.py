@@ -24,12 +24,12 @@ import numpy as np
 import torch
 import yaml
 
+from evaluation.artifacts import display_project_path
 from evaluation.model_registry import (
     DEFAULT_REGISTRY_PATH,
     connect_registry,
     import_tictactoe_run,
 )
-from evaluation.tictactoe_matches import make_opponent
 from games.tictactoe.rules import PLAYER_O, PLAYER_X
 from models.tictactoe_q_network import TicTacToeQNetwork
 from training.checkpoints import (
@@ -47,6 +47,7 @@ from training.metrics import (
 )
 from training.tictactoe.environment import Observation, TicTacToeAdapter
 from training.tictactoe.evaluation import evaluate_agent
+from training.tictactoe.opponents import TrainingOpponents
 from training.training_plots import plot_training_metrics
 from training.utils import ReplayBuffer, Transition, linear_epsilon
 from utils.timestamps import utc_now
@@ -176,11 +177,12 @@ def run_training(
         training["replay_capacity"], random.Random(experiment["seed"] + 3)
     )
     opponent_rng = random.Random(experiment["seed"] + 1)
-    environment = TicTacToeAdapter(
-        make_opponent(config["environment"]["opponent"], opponent_rng)
-    )
+    opponents = TrainingOpponents(config, agent.device, opponent_rng)
+    include_opponents = config["environment"]["opponent"] in ("model", "pool")
+    environment = TicTacToeAdapter()
 
     if saved is None:
+        opponents.initialize(agent.online_network)
         stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
         run_id = f"{stamp}_{uuid4().hex[:8]}"
         run_dir = Path(artifacts["output_root"]) / run_id
@@ -204,8 +206,18 @@ def run_training(
             raise ValueError(
                 "Episode target is below the checkpoint's completed episodes"
             )
+        opponent_state = saved.get("training_opponents")
+        if opponent_state is None:
+            if include_opponents:
+                raise ValueError("Checkpoint is missing its training opponents")
+            opponents.initialize(agent.online_network)
+        else:
+            opponents.load_state_dict(opponent_state)
+        # Model reconstruction can consume RNGs; restore training state last.
         restore_checkpoint(saved, agent, replay, opponent_rng, Observation)
-        restore_metric_offsets(run_dir, saved["metric_offsets"])
+        restore_metric_offsets(
+            run_dir, saved["metric_offsets"], include_opponents=include_opponents
+        )
 
     # A resumed run must cease being eligible until it completes again.
     with closing(connect_registry(registry_path)) as registry, registry:
@@ -280,7 +292,7 @@ def run_training(
         write_json(run_dir / "run.json", metadata)
 
     try:
-        with MetricsRecorder(run_dir) as metrics:
+        with MetricsRecorder(run_dir, include_opponents=include_opponents) as metrics:
 
             def checkpoint() -> None:
                 progress.wall_seconds = wall_base + perf_counter() - session_started
@@ -292,6 +304,9 @@ def run_training(
                     opponent_rng=opponent_rng,
                     progress=asdict(progress),
                     metric_offsets=metrics.offsets(),
+                    training_opponents=opponents.state_dict()
+                    if include_opponents
+                    else None,
                 )
                 filename = (
                     f"episode-{progress.episodes:08d}_"
@@ -322,7 +337,12 @@ def run_training(
                     progress.evaluation_seconds += perf_counter() - started
 
             update_metadata("running")
-            logger.info("Run %s: %s, device=%s", run_id, run_dir, agent.device)
+            logger.info(
+                "Run %s: %s, device=%s",
+                run_id,
+                display_project_path(run_dir),
+                agent.device,
+            )
             if saved is None:
                 # Keep initialization recoverable if baseline evaluation fails.
                 checkpoint()
@@ -339,6 +359,8 @@ def run_training(
                 plays_x = seat == "x" or (seat == "alternate" and episode % 2 == 1)
                 player = PLAYER_X if plays_x else PLAYER_O
                 started = perf_counter()
+                opponent = opponents.select()
+                environment.opponent = opponent.policy
                 observation = environment.reset(player)
                 decisions = progress.decisions
                 start_updates = agent.learning_updates
@@ -413,6 +435,17 @@ def run_training(
                         "training_seconds": progress.training_seconds,
                     },
                 )
+                if include_opponents:
+                    metrics.write(
+                        "opponents",
+                        {
+                            "session": session,
+                            "episode": episode,
+                            "category": opponent.category,
+                            "opponent_id": opponent.identity,
+                        },
+                    )
+                opponents.after_episode(agent.online_network, episode)
                 window_returns.append(episode_return)
                 if episode % artifacts["metrics_every_episodes"] == 0:
                     metrics.flush()
@@ -457,7 +490,7 @@ def run_training(
                 progress.training_seconds,
                 progress.evaluation_seconds,
                 progress.wall_seconds,
-                run_dir,
+                display_project_path(run_dir),
             )
     except BaseException as error:
         try:

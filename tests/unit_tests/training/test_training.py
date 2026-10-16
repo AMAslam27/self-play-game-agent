@@ -37,6 +37,88 @@ def short_config(root, episodes=6):
 
 
 class TestTrainingPipeline(unittest.TestCase):
+    def test_pool_resume_restores_weights_history_rng_and_opponent_records(self):
+        with tempfile.TemporaryDirectory() as directory, patch("training.tictactoe.train.plot_training_metrics"):
+            root = Path(directory)
+
+            def config(output):
+                result = short_config(output, episodes=8)
+                result["environment"]["opponent"] = "pool"
+                result["opponent_pool"]["snapshot_every_episodes"] = 2
+                result["opponent_pool"]["max_snapshots"] = 3
+                return result
+
+            full = run_training(config(root / "full"))
+            partial_root = root / "partial"
+
+            def stop():
+                runs = list(partial_root.glob("*"))
+                return bool(runs) and len(read_metrics(runs[0], "episodes")) >= 3
+
+            partial = run_training(config(partial_root), should_stop=stop)
+            resume = partial / "checkpoints/latest.pt"
+            run_training(load_checkpoint(resume)["config"], resume=resume)
+            expected = load_checkpoint(full / "checkpoints/latest.pt")
+            actual = load_checkpoint(resume)
+            self.assert_same_training(expected, actual)
+            first = expected["training_opponents"]
+            second = actual["training_opponents"]
+            self.assertEqual(first["rng"], second["rng"])
+            self.assertEqual([entry["episode"] for entry in first["snapshots"]], [0, 6, 8])
+            self.assertEqual([entry["identity"] for entry in first["snapshots"]],
+                             [entry["identity"] for entry in second["snapshots"]])
+            for left, right in zip(first["snapshots"], second["snapshots"]):
+                for name, value in left["weights"].items():
+                    torch.testing.assert_close(value, right["weights"][name], rtol=0, atol=0)
+
+            def selections(run):
+                return [(row["episode"], row["category"], row["opponent_id"])
+                        for row in read_metrics(run, "opponents")]
+
+            self.assertEqual(selections(full), selections(partial))
+            # Also recover an older checkpoint after later history exists.
+            older = next((partial / "checkpoints").glob("episode-00000002_*.pt"))
+            run_training(load_checkpoint(older)["config"], resume=older)
+            self.assert_same_training(expected, load_checkpoint(resume))
+            self.assertEqual(selections(full), selections(partial))
+            self.assertTrue(list((partial / "recoveries").glob("*/opponents.csv")))
+
+    def test_model_mode_resume_does_not_need_source_file(self):
+        from tests.unit_tests.training.test_opponents import saved_model
+
+        with tempfile.TemporaryDirectory() as directory, patch("training.tictactoe.train.plot_training_metrics"):
+            root = Path(directory)
+            source = root / "source.pt"
+            saved_model(source)
+            config = short_config(root / "runs", episodes=2)
+            config["environment"]["opponent"] = "model"
+            config["opponent_model"]["checkpoint"] = str(source)
+            run = run_training(config)
+            source.unlink()
+            resume = run / "checkpoints/latest.pt"
+            config = load_checkpoint(resume)["config"]
+            config["training"]["episodes"] = 4
+            run_training(config, resume=resume)
+            rows = read_metrics(run, "opponents")
+            self.assertEqual(len(rows), 4)
+            self.assertEqual({row["opponent_id"] for row in rows}, {"imported-0"})
+            self.assertEqual({row["category"] for row in rows}, {"model"})
+
+    def test_legacy_baseline_checkpoint_and_headers_remain_resumable(self):
+        with tempfile.TemporaryDirectory() as directory, patch("training.tictactoe.train.plot_training_metrics"):
+            run = run_training(short_config(Path(directory), episodes=2))
+            resume = run / "checkpoints/latest.pt"
+            saved = load_checkpoint(resume)
+            del saved["training_opponents"]
+            del saved["config"]["opponent_model"]
+            del saved["config"]["opponent_pool"]
+            torch.save(saved, resume)
+            config = copy.deepcopy(saved["config"])
+            config["training"]["episodes"] = 4
+            run_training(config, resume=resume)
+            self.assertFalse((run / "opponents.csv").exists())
+            self.assertNotIn("opponents", load_checkpoint(resume)["metric_offsets"])
+
     def assert_same_training(self, first, second):
         for key in ("online_network", "target_network"):
             for name, value in first["agent"][key].items():
