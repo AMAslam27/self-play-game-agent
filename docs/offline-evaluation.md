@@ -63,8 +63,9 @@ committed games remain available in SQLite. Failed assessments record the error
 in their manifest and exit with status 1. Successful assessments exit with 0.
 
 Offline assessments do not modify the model registry's ranking evidence or
-change which checkpoint is `best`. Registry integration and exhaustive
-assessment are separate follow-up steps. Repeated games against the current
+change which checkpoint is `best`. The separate [policy assessment commands](policy-assessment.md)
+provide exhaustive checks and comparison reporting without registry integration.
+Repeated games against the current
 deterministic minimax policy are sampled evaluation, not proof of perfect play.
 
 ## Loss-rate uncertainty

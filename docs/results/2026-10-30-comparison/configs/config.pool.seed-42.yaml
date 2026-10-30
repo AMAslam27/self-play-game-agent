@@ -1,0 +1,21 @@
+﻿# Train against baseline opponents and frozen versions of the learner.
+# Unspecified settings use the same defaults as config.example.yaml.
+schema_version: 1
+experiment:
+  name: tictactoe-dqn-pool
+  seed: 42
+  device: auto
+environment:
+  opponent: pool
+  agent_seat: alternate
+opponent_pool:
+  weights:
+    random: 0.2
+    minimax: 0.2
+    latest: 0.3
+    historical: 0.3
+  # Optional existing models; paths are relative to the project root.
+  initial_checkpoints: []
+  snapshot_every_episodes: 1000
+  max_snapshots: 8
+

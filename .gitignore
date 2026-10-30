@@ -82,6 +82,12 @@ runs/
 outputs/
 artifacts/
 
+# Local evaluations, comparisons, and generated reports
+/results/
+
+# Generated training configs; published copies live under docs/results/
+/training/tictactoe/config.*.seed-*.yaml
+
 # TensorBoard
 tensorboard/
 
@@ -113,8 +119,6 @@ temp/
 # Automatically generated run charts
 /results/*/plots/
 /results/*/evaluations/
-
-Add-Content -Path .gitignore -Value "`n# Published experiment figures`n!/docs/results/**/*.png"
 
 /PROJECT_SCOPE.md
 

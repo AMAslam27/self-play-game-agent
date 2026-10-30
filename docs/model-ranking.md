@@ -45,7 +45,9 @@ Historical runs lack evaluator source fingerprints. The importer labels them
 not verification that historical opponent implementations were identical.
 Use distinct evaluator identities when importing runs with different evaluators.
 The current deterministic minimax evaluation does not establish perfect play.
-Exhaustive assessment will require a new ranking policy and protocol.
+The separate [exhaustive evaluator](policy-assessment.md) checks all opponent
+responses, but does not change these rankings. Using exhaustive evidence for
+automatic model selection would require a new ranking policy and protocol.
 
 ## Selection API
 

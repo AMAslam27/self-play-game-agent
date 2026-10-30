@@ -1,0 +1,463 @@
+{
+  "schema_version": 2,
+  "assessment_id": "2026-10-30_15-41-09_489116_UTC_ee331eb3",
+  "status": "completed",
+  "started_at": "2026-10-30T15:41:09.495647+00:00",
+  "finished_at": "2026-10-30T15:44:34.765811+00:00",
+  "model": {
+    "experiment_run_id": "20261023T155315311733Z_130ef9a8",
+    "experiment_name": "tictactoe-dqn-random",
+    "checkpoint_path": "/app/training/tictactoe/runs/20261023T155315311733Z_130ef9a8/checkpoints/episode-00020000_updates-00071768_session-001.pt",
+    "checkpoint_hash": "ea3c09f3e9dc51862da9b41e782978c4f5eab2965107f3dcc7f1fb9b36f70a58",
+    "selection": "training/tictactoe/runs/20261023T155315311733Z_130ef9a8/checkpoints/episode-00020000_updates-00071768_session-001.pt",
+    "protocol_id": null
+  },
+  "model_config": {
+    "schema_version": 1,
+    "experiment": {
+      "name": "tictactoe-dqn-random",
+      "seed": 42,
+      "device": "auto",
+      "deterministic": true
+    },
+    "environment": {
+      "opponent": "random",
+      "agent_seat": "alternate"
+    },
+    "opponent_model": {
+      "checkpoint": null
+    },
+    "opponent_pool": {
+      "weights": {
+        "random": 0.2,
+        "minimax": 0.2,
+        "latest": 0.3,
+        "historical": 0.3
+      },
+      "initial_checkpoints": [],
+      "snapshot_every_episodes": 1000,
+      "max_snapshots": 8
+    },
+    "network": {
+      "hidden_sizes": [
+        64,
+        64
+      ],
+      "block_types": [
+        "dense",
+        "dense"
+      ],
+      "activations": [
+        "relu",
+        "relu"
+      ],
+      "dropout_probability": 0.1
+    },
+    "training": {
+      "episodes": 20000,
+      "optimizer": {
+        "name": "adam",
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "options": {}
+      },
+      "lr_scheduler": {
+        "name": "none",
+        "options": {}
+      },
+      "loss": "smooth_l1",
+      "discount_factor": 0.99,
+      "batch_size": 64,
+      "replay_capacity": 10000,
+      "learning_starts": 1000,
+      "train_every_steps": 1,
+      "gradient_updates_per_step": 1,
+      "target_update_every_updates": 250
+    },
+    "exploration": {
+      "initial_epsilon": 1.0,
+      "final_epsilon": 0.05,
+      "schedule": "linear",
+      "decay_steps": 50000
+    },
+    "evaluation": {
+      "every_episodes": 1000,
+      "opponents": [
+        "random",
+        "minimax"
+      ],
+      "seats": [
+        "x",
+        "o"
+      ],
+      "games_per_opponent_per_seat": 200,
+      "seed": 12345,
+      "epsilon": 0.0
+    },
+    "artifacts": {
+      "output_root": "/app/training/tictactoe/runs",
+      "save_resolved_config": true,
+      "save_code_version": true,
+      "checkpoint_every_episodes": 1000,
+      "save_final_checkpoint": true,
+      "metrics_every_episodes": 100,
+      "plot_every_episodes": 1000
+    }
+  },
+  "device": "cuda",
+  "protocol_id": "e55f09c71c6a2e4e1b3391fb5b539ff01a4f1390e7f3e12f174f3169eb8bc360",
+  "protocol": {
+    "game": "tictactoe",
+    "evaluator_id": "tictactoe-sampled-v1",
+    "opponents": [
+      "random",
+      "minimax"
+    ],
+    "seats": [
+      "x",
+      "o"
+    ],
+    "base_seeds": [
+      12345,
+      23456,
+      34567
+    ],
+    "games_per_opponent_per_seat_per_seed": 1000,
+    "epsilon": 0.0,
+    "encoding": "current-player-relative-v1",
+    "selection": "greedy-lowest-index-v1",
+    "seed_rule": "base + opponent_index * 2 + (seat == o)",
+    "minimax_tie_break": "lowest-index-v1"
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "torch": "2.14.1+cu130"
+  },
+  "requested_batches": 12,
+  "uncertainty": {
+    "metric": "loss_rate",
+    "method": "wilson",
+    "confidence_level": 0.95,
+    "units": "proportion",
+    "scope": "Sampling uncertainty for a fixed model against the random opponent",
+    "assumption": "Independent games with a fixed loss probability",
+    "excluded_opponents": [
+      "minimax"
+    ],
+    "incomplete_batches": "Excluded from intervals and pooled summaries",
+    "training_seed_variation": "Not estimated"
+  },
+  "batches": [
+    {
+      "base_seed": 12345,
+      "seed": 12345,
+      "opponent": "random",
+      "seat": "x",
+      "games": 1000,
+      "wins": 953,
+      "draws": 19,
+      "losses": 28,
+      "duration_seconds": 16.410949782999978,
+      "status": "completed",
+      "db_run_id": 1,
+      "average_return": 0.925,
+      "loss_rate": 0.028,
+      "loss_rate_ci_lower": 0.01944227681277093,
+      "loss_rate_ci_upper": 0.04017018319759311,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 12345,
+      "seed": 12346,
+      "opponent": "random",
+      "seat": "o",
+      "games": 1000,
+      "wins": 901,
+      "draws": 51,
+      "losses": 48,
+      "duration_seconds": 17.388373468000054,
+      "status": "completed",
+      "db_run_id": 2,
+      "average_return": 0.853,
+      "loss_rate": 0.048,
+      "loss_rate_ci_lower": 0.036393301020807914,
+      "loss_rate_ci_upper": 0.06306608865013393,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 12345,
+      "seed": 12347,
+      "opponent": "minimax",
+      "seat": "x",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 19.259672682999962,
+      "status": "completed",
+      "db_run_id": 3,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    },
+    {
+      "base_seed": 12345,
+      "seed": 12348,
+      "opponent": "minimax",
+      "seat": "o",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 23.186899366000034,
+      "status": "completed",
+      "db_run_id": 4,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    },
+    {
+      "base_seed": 23456,
+      "seed": 23456,
+      "opponent": "random",
+      "seat": "x",
+      "games": 1000,
+      "wins": 938,
+      "draws": 27,
+      "losses": 35,
+      "duration_seconds": 15.66548847099989,
+      "status": "completed",
+      "db_run_id": 5,
+      "average_return": 0.903,
+      "loss_rate": 0.035,
+      "loss_rate_ci_lower": 0.025272263017112953,
+      "loss_rate_ci_upper": 0.04828662237445333,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 23456,
+      "seed": 23457,
+      "opponent": "random",
+      "seat": "o",
+      "games": 1000,
+      "wins": 920,
+      "draws": 37,
+      "losses": 43,
+      "duration_seconds": 15.174405052999873,
+      "status": "completed",
+      "db_run_id": 6,
+      "average_return": 0.877,
+      "loss_rate": 0.043,
+      "loss_rate_ci_lower": 0.03207865341171337,
+      "loss_rate_ci_upper": 0.05741900384408401,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 23456,
+      "seed": 23458,
+      "opponent": "minimax",
+      "seat": "x",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 16.78403045899995,
+      "status": "completed",
+      "db_run_id": 7,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    },
+    {
+      "base_seed": 23456,
+      "seed": 23459,
+      "opponent": "minimax",
+      "seat": "o",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 16.325765790999867,
+      "status": "completed",
+      "db_run_id": 8,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    },
+    {
+      "base_seed": 34567,
+      "seed": 34567,
+      "opponent": "random",
+      "seat": "x",
+      "games": 1000,
+      "wins": 955,
+      "draws": 19,
+      "losses": 26,
+      "duration_seconds": 16.43889916399985,
+      "status": "completed",
+      "db_run_id": 9,
+      "average_return": 0.929,
+      "loss_rate": 0.026,
+      "loss_rate_ci_lower": 0.01780393820161633,
+      "loss_rate_ci_upper": 0.03782382884268992,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 34567,
+      "seed": 34568,
+      "opponent": "random",
+      "seat": "o",
+      "games": 1000,
+      "wins": 913,
+      "draws": 56,
+      "losses": 31,
+      "duration_seconds": 15.804933898999934,
+      "status": "completed",
+      "db_run_id": 10,
+      "average_return": 0.882,
+      "loss_rate": 0.031,
+      "loss_rate_ci_lower": 0.02192400344715857,
+      "loss_rate_ci_upper": 0.04366549601229214,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null
+    },
+    {
+      "base_seed": 34567,
+      "seed": 34569,
+      "opponent": "minimax",
+      "seat": "x",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 15.948471889999837,
+      "status": "completed",
+      "db_run_id": 11,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    },
+    {
+      "base_seed": 34567,
+      "seed": 34570,
+      "opponent": "minimax",
+      "seat": "o",
+      "games": 1000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1000,
+      "duration_seconds": 16.51139767199993,
+      "status": "completed",
+      "db_run_id": 12,
+      "average_return": -1.0,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent"
+    }
+  ],
+  "active_batch": null,
+  "summary": [
+    {
+      "opponent": "random",
+      "seat": "x",
+      "games": 3000,
+      "wins": 2846,
+      "draws": 65,
+      "losses": 89,
+      "loss_rate": 0.029666666666666668,
+      "loss_rate_ci_lower": 0.024170985762442646,
+      "loss_rate_ci_upper": 0.036365317938513976,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null,
+      "completed_seed_batches": 3,
+      "requested_seed_batches": 3,
+      "average_return": 0.919
+    },
+    {
+      "opponent": "random",
+      "seat": "o",
+      "games": 3000,
+      "wins": 2734,
+      "draws": 144,
+      "losses": 122,
+      "loss_rate": 0.04066666666666666,
+      "loss_rate_ci_lower": 0.03416630327106453,
+      "loss_rate_ci_upper": 0.04834186575793492,
+      "loss_rate_ci_method": "wilson",
+      "loss_rate_ci_confidence": 0.95,
+      "loss_rate_ci_reason": null,
+      "completed_seed_batches": 3,
+      "requested_seed_batches": 3,
+      "average_return": 0.8706666666666667
+    },
+    {
+      "opponent": "minimax",
+      "seat": "x",
+      "games": 3000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 3000,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent",
+      "completed_seed_batches": 3,
+      "requested_seed_batches": 3,
+      "average_return": -1.0
+    },
+    {
+      "opponent": "minimax",
+      "seat": "o",
+      "games": 3000,
+      "wins": 0,
+      "draws": 0,
+      "losses": 3000,
+      "loss_rate": 1.0,
+      "loss_rate_ci_lower": null,
+      "loss_rate_ci_upper": null,
+      "loss_rate_ci_method": null,
+      "loss_rate_ci_confidence": null,
+      "loss_rate_ci_reason": "deterministic_opponent",
+      "completed_seed_batches": 3,
+      "requested_seed_batches": 3,
+      "average_return": -1.0
+    }
+  ]
+}
