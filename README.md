@@ -125,10 +125,37 @@ do not establish it.
 
 ## Current results
 
+The completed self-play comparison trained five random-opponent models and five
+snapshot-pool models using seeds 42–46, for 20,000 episodes each. On 30 October
+2026, all ten checkpoints completed the same 12,000-game offline assessment.
+Mean loss rates across the five trained models were:
+
+| Evaluation opponent | Agent seat | Random training | Snapshot-pool training |
+| --- | --- | ---: | ---: |
+| Random | X | 4.81% | 0.89% |
+| Random | O | 5.82% | 7.21% |
+| Minimax | X | 80.00% | 20.00% |
+| Minimax | O | 80.00% | 0.00% |
+
+Pool training improved performance against this minimax policy and against
+random play as X, but worsened average random-opponent performance as O.
+Exhaustive opponent-response evaluation found only pool seed 44 unbeatable as X
+from the empty board; every model remained exploitable as O. Forty deterministic
+historical-model matchups produced 6 wins/7 draws/7 losses for random training
+and 4 wins/12 draws/4 losses for pool training.
+
+The [complete comparison](docs/results/2026-10-30-comparison/README.md) includes
+per-seed results, training-seed variation, sampling uncertainty, checkpoint
+identities, losing move sequences, plots, and reproduction commands. These
+results close the planned tic-tac-toe self-play experiment, with remaining
+limitations documented.
+
+### Original baseline experiment
+
 The first published experiment trained against a random opponent for 20,000
 episodes, alternating between X and O.
 
-The latest completed offline assessment, on 15 October 2026, evaluated its
+An expanded offline assessment, on 15 October 2026, evaluated its
 final checkpoint over 12,000 games: 1,000 per opponent, seat, and evaluation
 seed. Results pooled across the three evaluation seeds are:
 
@@ -196,6 +223,10 @@ saves independent JSON/CSV summaries and per-game SQLite records. See the
 [offline evaluation guide](docs/offline-evaluation.md) for Docker usage,
 checkpoint selectors, and interruption behaviour.
 
+For exhaustive opponent-response checks, fixed historical-model matchups, and
+comparison reports, see the [policy assessment guide](docs/policy-assessment.md).
+These diagnostics do not change the model registry's ranking policy.
+
 ## Play Tic-Tac-Toe
 
 ```sh
@@ -259,6 +290,5 @@ poetry run pytest
 
 ## Planned work
 
-- Evaluate training stability across multiple seeds.
-- Evaluate self-play against fixed historical reference models.
+- Optionally improve training to learn consistently unbeatable policies in both seats.
 - Extend the environment and training framework to additional games.

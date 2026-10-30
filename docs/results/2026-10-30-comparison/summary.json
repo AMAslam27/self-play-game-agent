@@ -1,0 +1,1338 @@
+{
+  "schema_version": 1,
+  "protocol_id": "e55f09c71c6a2e4e1b3391fb5b539ff01a4f1390e7f3e12f174f3169eb8bc360",
+  "uncertainty": "Per-model Wilson intervals describe random-game sampling; sample SD describes training-seed variation. Neither applies to deterministic repeated matchups.",
+  "baseline_summary": [
+    {
+      "training_method": "pool",
+      "opponent": "minimax",
+      "seat": "o",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.0,
+      "sample_sd_loss_rate": 0.0,
+      "min_loss_rate": 0.0,
+      "max_loss_rate": 0.0
+    },
+    {
+      "training_method": "pool",
+      "opponent": "minimax",
+      "seat": "x",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.2,
+      "sample_sd_loss_rate": 0.4472135954999579,
+      "min_loss_rate": 0.0,
+      "max_loss_rate": 1.0
+    },
+    {
+      "training_method": "pool",
+      "opponent": "random",
+      "seat": "o",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.07213333333333333,
+      "sample_sd_loss_rate": 0.024113850330832236,
+      "min_loss_rate": 0.054,
+      "max_loss_rate": 0.114
+    },
+    {
+      "training_method": "pool",
+      "opponent": "random",
+      "seat": "x",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.008933333333333333,
+      "sample_sd_loss_rate": 0.0055547777233257095,
+      "min_loss_rate": 0.0,
+      "max_loss_rate": 0.013
+    },
+    {
+      "training_method": "random",
+      "opponent": "minimax",
+      "seat": "o",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.8,
+      "sample_sd_loss_rate": 0.4472135954999579,
+      "min_loss_rate": 0.0,
+      "max_loss_rate": 1.0
+    },
+    {
+      "training_method": "random",
+      "opponent": "minimax",
+      "seat": "x",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.8,
+      "sample_sd_loss_rate": 0.4472135954999579,
+      "min_loss_rate": 0.0,
+      "max_loss_rate": 1.0
+    },
+    {
+      "training_method": "random",
+      "opponent": "random",
+      "seat": "o",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.0582,
+      "sample_sd_loss_rate": 0.027871331348019796,
+      "min_loss_rate": 0.021333333333333333,
+      "max_loss_rate": 0.09366666666666666
+    },
+    {
+      "training_method": "random",
+      "opponent": "random",
+      "seat": "x",
+      "training_seeds": 5,
+      "mean_loss_rate": 0.04806666666666667,
+      "sample_sd_loss_rate": 0.01446336367823505,
+      "min_loss_rate": 0.029666666666666668,
+      "max_loss_rate": 0.06766666666666667
+    }
+  ],
+  "historical": [
+    {
+      "run_id": "20261023T155315311733Z_130ef9a8",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T155315311733Z_130ef9a8\\checkpoints\\episode-00020000_updates-00071768_session-001.pt",
+      "checkpoint_hash": "ea3c09f3e9dc51862da9b41e782978c4f5eab2965107f3dcc7f1fb9b36f70a58",
+      "training_method": "random",
+      "training_seed": 42,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            3,
+            4,
+            0,
+            6,
+            2,
+            7,
+            1
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            0,
+            1,
+            7,
+            6,
+            2,
+            3,
+            5,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            3,
+            8,
+            6,
+            0,
+            4,
+            5,
+            2
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            4,
+            8,
+            6,
+            2,
+            5,
+            3,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T160928762958Z_4656686c",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T160928762958Z_4656686c\\checkpoints\\episode-00020000_updates-00071640_session-001.pt",
+      "checkpoint_hash": "ff12930f3de51e6a296c6ec613f4f90ffacbbbc9dece4d12acdc9623b2875e0b",
+      "training_method": "random",
+      "training_seed": 43,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            2,
+            1,
+            5,
+            8,
+            4,
+            6,
+            3
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            0,
+            1,
+            7,
+            6,
+            2,
+            3,
+            5,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            2,
+            4,
+            8,
+            5,
+            6,
+            3
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            0,
+            4,
+            1,
+            2,
+            6,
+            3,
+            5,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T163728656743Z_85008cf4",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T163728656743Z_85008cf4\\checkpoints\\episode-00020000_updates-00071736_session-001.pt",
+      "checkpoint_hash": "461a94fefb02a543ebaf244d15f10a89b17a0a75b56dfd62272b6b821366ca48",
+      "training_method": "random",
+      "training_seed": 44,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            3,
+            4,
+            0,
+            6,
+            2,
+            7,
+            1
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            4,
+            2,
+            1,
+            7,
+            0,
+            8,
+            6,
+            5
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            3,
+            8,
+            5,
+            4,
+            0,
+            6,
+            1,
+            7
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            0,
+            4,
+            1,
+            2,
+            6,
+            3,
+            5,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T164728831425Z_62e9a33b",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T164728831425Z_62e9a33b\\checkpoints\\episode-00020000_updates-00071756_session-001.pt",
+      "checkpoint_hash": "d1a7a57862387211080de28996dd7a8926e10d27c1c28f37a658629c9dc9a69a",
+      "training_method": "random",
+      "training_seed": 45,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            6,
+            4,
+            7,
+            8,
+            3,
+            0
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            4,
+            2,
+            1,
+            7,
+            0,
+            8,
+            6,
+            5
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            6,
+            4,
+            7,
+            5,
+            1,
+            3
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            4,
+            8,
+            6,
+            2,
+            5,
+            3,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T165710240883Z_e484d378",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T165710240883Z_e484d378\\checkpoints\\episode-00020000_updates-00071534_session-001.pt",
+      "checkpoint_hash": "b877a8fcea4f2a15ddd60299775e552337427b431eaf6caf35549451b9c4bd89",
+      "training_method": "random",
+      "training_seed": 46,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            4,
+            8,
+            7,
+            1,
+            3,
+            5,
+            6,
+            2
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            0,
+            1,
+            7,
+            6,
+            2,
+            3,
+            5,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            4,
+            2,
+            3,
+            5,
+            6,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            7,
+            4,
+            8,
+            6,
+            2,
+            3,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T171910787460Z_88ba6d25",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T171910787460Z_88ba6d25\\checkpoints\\episode-00020000_updates-00071419_session-001.pt",
+      "checkpoint_hash": "9dc821108b46aacd84e9d335cacf57837290ad0813d4e6d4ed3e3a65b6c95290",
+      "training_method": "pool",
+      "training_seed": 42,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            4,
+            8,
+            6,
+            2,
+            5,
+            3,
+            0,
+            1
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            4,
+            2,
+            1,
+            7,
+            0,
+            8,
+            6,
+            5
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            8,
+            4,
+            1,
+            3,
+            5,
+            2,
+            6,
+            0
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            8,
+            4,
+            1,
+            3,
+            5,
+            2,
+            6,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T173250297157Z_3888fc7a",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T173250297157Z_3888fc7a\\checkpoints\\episode-00020000_updates-00071111_session-001.pt",
+      "checkpoint_hash": "2dfeb73a36419e59daad1ef7b1a250258a4f6d4085cedd26d04d9052d00b2ee8",
+      "training_method": "pool",
+      "training_seed": 43,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            6,
+            4,
+            7,
+            8,
+            0,
+            3,
+            5,
+            1,
+            2
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            8,
+            3,
+            5,
+            2,
+            6,
+            7,
+            1,
+            0
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            6,
+            4,
+            7,
+            5,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            7,
+            8,
+            4,
+            2,
+            5,
+            1,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T180931852844Z_6d7b46d3",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T180931852844Z_6d7b46d3\\checkpoints\\episode-00020000_updates-00072842_session-001.pt",
+      "checkpoint_hash": "dbdbb6eeb7dc496ded7c9092cf7f738830e52956007cd377eda75d4b82e46cfc",
+      "training_method": "pool",
+      "training_seed": 44,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            8,
+            2,
+            6,
+            7,
+            1,
+            3,
+            5,
+            0
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            4,
+            2,
+            1,
+            5,
+            7
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            4,
+            2,
+            1,
+            7,
+            8,
+            3,
+            0
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            6,
+            4,
+            1,
+            0,
+            8,
+            3,
+            5,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T184212596115Z_d15391d3",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T184212596115Z_d15391d3\\checkpoints\\episode-00020000_updates-00071669_session-001.pt",
+      "checkpoint_hash": "920fe555a4f6b9bdf079570568ed940c81e06143a6846e315acb9641139ca53a",
+      "training_method": "pool",
+      "training_seed": 45,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            8,
+            7,
+            1,
+            5,
+            3,
+            6,
+            2,
+            0
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            4,
+            0,
+            1,
+            7,
+            6,
+            2,
+            3,
+            5,
+            8
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            4,
+            2,
+            0,
+            8,
+            3,
+            5
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            2,
+            4,
+            1,
+            0,
+            8,
+            5,
+            3,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T190424530716Z_6f59b59a",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T190424530716Z_6f59b59a\\checkpoints\\episode-00020000_updates-00072945_session-001.pt",
+      "checkpoint_hash": "d9f28815ec025f0560cdaae288584129aed0c51aa588230763e3ce03c4b9a7ea",
+      "training_method": "pool",
+      "training_seed": 46,
+      "matches": [
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "x",
+          "games": 1,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "moves": [
+            6,
+            4,
+            8,
+            7,
+            1,
+            5,
+            3,
+            2,
+            0
+          ]
+        },
+        {
+          "reference_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 0,
+          "losses": 1,
+          "moves": [
+            4,
+            8,
+            3,
+            6,
+            5
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "x",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            6,
+            4,
+            8,
+            7,
+            1,
+            3,
+            5,
+            2,
+            0
+          ]
+        },
+        {
+          "reference_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+          "seat": "o",
+          "games": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "moves": [
+            7,
+            2,
+            4,
+            1,
+            0,
+            8,
+            5,
+            3,
+            6
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "run_id": "20261005T185241722454Z_a1f0bcd3",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261005T185241722454Z_a1f0bcd3\\checkpoints\\episode-00020000_updates-00071783_session-001.pt",
+      "checkpoint_hash": "b34b921b7dd3a1aad0cd493993e722129f23bc8239e457e6ea46a21eeb7e628b",
+      "training_method": "random",
+      "training_seed": 42
+    },
+    {
+      "run_id": "20261016T172001266503Z_60cb62f5",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261016T172001266503Z_60cb62f5\\checkpoints\\episode-00020000_updates-00071419_session-001.pt",
+      "checkpoint_hash": "c08da0db7ace358665f9a92a7febc158a0debc84273476e84c2d865363f6c254",
+      "training_method": "pool",
+      "training_seed": 42
+    }
+  ],
+  "exhaustive": [
+    {
+      "run_id": "20261023T155315311733Z_130ef9a8",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T155315311733Z_130ef9a8\\checkpoints\\episode-00020000_updates-00071768_session-001.pt",
+      "checkpoint_hash": "ea3c09f3e9dc51862da9b41e782978c4f5eab2965107f3dcc7f1fb9b36f70a58",
+      "training_method": "random",
+      "training_seed": 42,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 109,
+          "draws": 6,
+          "losses": 10,
+          "states": 251,
+          "losing_sequence": [
+            3,
+            0,
+            5,
+            4,
+            8,
+            2,
+            1,
+            6
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 464,
+          "draws": 54,
+          "losses": 35,
+          "states": 661,
+          "losing_sequence": [
+            0,
+            4,
+            1,
+            2,
+            6,
+            5,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T160928762958Z_4656686c",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T160928762958Z_4656686c\\checkpoints\\episode-00020000_updates-00071640_session-001.pt",
+      "checkpoint_hash": "ff12930f3de51e6a296c6ec613f4f90ffacbbbc9dece4d12acdc9623b2875e0b",
+      "training_method": "random",
+      "training_seed": 43,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 116,
+          "draws": 5,
+          "losses": 14,
+          "states": 268,
+          "losing_sequence": [
+            2,
+            0,
+            5,
+            6,
+            7,
+            3
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 458,
+          "draws": 62,
+          "losses": 55,
+          "states": 910,
+          "losing_sequence": [
+            0,
+            4,
+            1,
+            2,
+            6,
+            7,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T163728656743Z_85008cf4",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T163728656743Z_85008cf4\\checkpoints\\episode-00020000_updates-00071736_session-001.pt",
+      "checkpoint_hash": "461a94fefb02a543ebaf244d15f10a89b17a0a75b56dfd62272b6b821366ca48",
+      "training_method": "random",
+      "training_seed": 44,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 119,
+          "draws": 11,
+          "losses": 22,
+          "states": 284,
+          "losing_sequence": [
+            3,
+            0,
+            4,
+            5,
+            6,
+            2,
+            8,
+            1
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 438,
+          "draws": 53,
+          "losses": 66,
+          "states": 924,
+          "losing_sequence": [
+            0,
+            4,
+            2,
+            7,
+            1
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T164728831425Z_62e9a33b",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T164728831425Z_62e9a33b\\checkpoints\\episode-00020000_updates-00071756_session-001.pt",
+      "checkpoint_hash": "d1a7a57862387211080de28996dd7a8926e10d27c1c28f37a658629c9dc9a69a",
+      "training_method": "random",
+      "training_seed": 45,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 137,
+          "draws": 5,
+          "losses": 12,
+          "states": 251,
+          "losing_sequence": [
+            6,
+            2,
+            7,
+            4,
+            5,
+            0,
+            1,
+            8
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 470,
+          "draws": 66,
+          "losses": 21,
+          "states": 636,
+          "losing_sequence": [
+            0,
+            4,
+            1,
+            2,
+            6,
+            5,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T165710240883Z_e484d378",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T165710240883Z_e484d378\\checkpoints\\episode-00020000_updates-00071534_session-001.pt",
+      "checkpoint_hash": "b877a8fcea4f2a15ddd60299775e552337427b431eaf6caf35549451b9c4bd89",
+      "training_method": "random",
+      "training_seed": 46,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 119,
+          "draws": 8,
+          "losses": 11,
+          "states": 292,
+          "losing_sequence": [
+            4,
+            0,
+            3,
+            1,
+            7,
+            2
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 458,
+          "draws": 67,
+          "losses": 50,
+          "states": 813,
+          "losing_sequence": [
+            0,
+            4,
+            1,
+            2,
+            6,
+            5,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T171910787460Z_88ba6d25",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T171910787460Z_88ba6d25\\checkpoints\\episode-00020000_updates-00071419_session-001.pt",
+      "checkpoint_hash": "9dc821108b46aacd84e9d335cacf57837290ad0813d4e6d4ed3e3a65b6c95290",
+      "training_method": "pool",
+      "training_seed": 42,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 100,
+          "draws": 7,
+          "losses": 4,
+          "states": 223,
+          "losing_sequence": [
+            7,
+            1,
+            6,
+            8,
+            3,
+            0,
+            2,
+            4
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 468,
+          "draws": 106,
+          "losses": 45,
+          "states": 865,
+          "losing_sequence": [
+            0,
+            4,
+            7,
+            5,
+            3,
+            6,
+            2,
+            8,
+            1
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T173250297157Z_3888fc7a",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T173250297157Z_3888fc7a\\checkpoints\\episode-00020000_updates-00071111_session-001.pt",
+      "checkpoint_hash": "2dfeb73a36419e59daad1ef7b1a250258a4f6d4085cedd26d04d9052d00b2ee8",
+      "training_method": "pool",
+      "training_seed": 43,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 114,
+          "draws": 9,
+          "losses": 4,
+          "states": 254,
+          "losing_sequence": [
+            6,
+            0,
+            3,
+            1,
+            2,
+            4,
+            8,
+            7
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 443,
+          "draws": 103,
+          "losses": 55,
+          "states": 838,
+          "losing_sequence": [
+            0,
+            4,
+            2,
+            1,
+            6,
+            5,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T180931852844Z_6d7b46d3",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T180931852844Z_6d7b46d3\\checkpoints\\episode-00020000_updates-00072842_session-001.pt",
+      "checkpoint_hash": "dbdbb6eeb7dc496ded7c9092cf7f738830e52956007cd377eda75d4b82e46cfc",
+      "training_method": "pool",
+      "training_seed": 44,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 123,
+          "draws": 10,
+          "losses": 0,
+          "states": 261,
+          "losing_sequence": null,
+          "unbeatable": true
+        },
+        {
+          "seat": "o",
+          "wins": 446,
+          "draws": 87,
+          "losses": 56,
+          "states": 953,
+          "losing_sequence": [
+            0,
+            4,
+            8,
+            2,
+            6,
+            7,
+            3
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T184212596115Z_d15391d3",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T184212596115Z_d15391d3\\checkpoints\\episode-00020000_updates-00071669_session-001.pt",
+      "checkpoint_hash": "920fe555a4f6b9bdf079570568ed940c81e06143a6846e315acb9641139ca53a",
+      "training_method": "pool",
+      "training_seed": 45,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 128,
+          "draws": 7,
+          "losses": 4,
+          "states": 294,
+          "losing_sequence": [
+            4,
+            2,
+            0,
+            8,
+            3,
+            5
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 423,
+          "draws": 93,
+          "losses": 81,
+          "states": 978,
+          "losing_sequence": [
+            0,
+            4,
+            2,
+            1,
+            3,
+            5,
+            6
+          ],
+          "unbeatable": false
+        }
+      ]
+    },
+    {
+      "run_id": "20261023T190424530716Z_6f59b59a",
+      "checkpoint_path": "C:\\Users\\asima\\Documents\\Code\\Game\\training\\tictactoe\\runs\\20261023T190424530716Z_6f59b59a\\checkpoints\\episode-00020000_updates-00072945_session-001.pt",
+      "checkpoint_hash": "d9f28815ec025f0560cdaae288584129aed0c51aa588230763e3ce03c4b9a7ea",
+      "training_method": "pool",
+      "training_seed": 46,
+      "seats": [
+        {
+          "seat": "x",
+          "wins": 113,
+          "draws": 8,
+          "losses": 3,
+          "states": 247,
+          "losing_sequence": [
+            6,
+            1,
+            8,
+            7,
+            4,
+            0,
+            5,
+            2
+          ],
+          "unbeatable": false
+        },
+        {
+          "seat": "o",
+          "wins": 513,
+          "draws": 53,
+          "losses": 57,
+          "states": 863,
+          "losing_sequence": [
+            0,
+            4,
+            2,
+            1,
+            7,
+            3,
+            8,
+            6,
+            5
+          ],
+          "unbeatable": false
+        }
+      ]
+    }
+  ]
+}
